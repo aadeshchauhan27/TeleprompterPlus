@@ -1,5 +1,7 @@
 package com.teleprompter.app.ui.screens.auth
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teleprompter.app.core.auth.AuthRepository
@@ -16,6 +18,22 @@ class SignInViewModel(
     val currentUser: StateFlow<AuthUser?> = authRepository.currentUser
     val isUserSignedIn: StateFlow<Boolean> = authRepository.isUserSignedIn
 
+    fun getGoogleSignInIntent(context: Context): Intent {
+        return authRepository.getGoogleSignInIntent(context)
+    }
+
+    fun handleSignInResult(intent: Intent?, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = authRepository.handleSignInResult(intent)
+            if (result.isSuccess) {
+                syncRepository.syncNow()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Sign-in cancelled")
+            }
+        }
+    }
+
     fun signInWithGoogle(
         idToken: String = "",
         email: String? = null,
@@ -24,7 +42,6 @@ class SignInViewModel(
     ) {
         viewModelScope.launch {
             authRepository.signInWithGoogleToken(idToken, email, name)
-            // Trigger background sync after sign-in
             syncRepository.syncNow()
             onSuccess()
         }

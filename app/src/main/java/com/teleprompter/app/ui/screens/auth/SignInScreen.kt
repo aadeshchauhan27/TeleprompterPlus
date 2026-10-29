@@ -1,6 +1,8 @@
 package com.teleprompter.app.ui.screens.auth
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -23,7 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -62,6 +63,8 @@ import com.teleprompter.app.core.theme.PurpleGradient
 import com.teleprompter.app.core.theme.TextDarkHeading
 import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.ui.AppViewModelProvider
+import com.teleprompter.app.ui.components.TeleprompterBrandTitle
+import com.teleprompter.app.ui.components.TeleprompterLogoBadge
 
 @Composable
 fun SignInScreen(
@@ -74,6 +77,21 @@ fun SignInScreen(
     var showEmailDialog by remember { mutableStateOf(false) }
     var emailInput by remember { mutableStateOf("") }
 
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        viewModel.handleSignInResult(
+            intent = result.data,
+            onSuccess = {
+                Toast.makeText(context, "Signed in successfully", Toast.LENGTH_SHORT).show()
+                onSignInSuccess()
+            },
+            onError = { errMsg ->
+                Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -84,125 +102,49 @@ fun SignInScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Center Branding Section
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // App Premium Logo Badge with animated gradient background
-            Box(
-                modifier = Modifier
-                    .size(104.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(brush = androidx.compose.ui.graphics.Brush.linearGradient(listOf(CyanGradient, ElectricBlue, PurpleGradient)))
-                    .border(2.dp, Color(0xFF1E293B), RoundedCornerShape(28.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                // Speech bubble shape representation with play button
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(16.dp)
-                                        .height(3.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(CyanGradient)
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .width(16.dp)
-                                        .height(3.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(ElectricBlue)
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .width(10.dp)
-                                        .height(3.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(PurpleGradient)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                    }
-                }
-            }
+            // App Premium Logo Badge for Teleprompter Plus
+            TeleprompterLogoBadge(size = 96.dp)
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // App Title: "TelePrompter" with gradient effect
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Tele",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = TextDarkHeading,
-                        fontSize = 32.sp
-                    )
-                )
-                Text(
-                    text = "Prompter",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = ElectricBlue,
-                        fontSize = 32.sp
-                    )
-                )
-            }
+            // App Title: "Teleprompter Plus"
+            TeleprompterBrandTitle(fontSize = 30.sp, isDarkBackground = false)
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Subtitle
             Text(
-                text = "Sign in to sync your scripts\nacross all your devices",
+                text = "Sign in to sync your scripts & settings\nsecurely to your private cloud",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = TextDarkMuted,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
                 ),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
-            // Premium Social Buttons
+            // Real Google Sign In Button
             AuthSocialButton(
                 icon = {
                     Text("G", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Color(0xFFEA4335))
                 },
                 text = "Continue with Google",
                 onClick = {
-                    viewModel.signInWithGoogle(
-                        email = "creator@teleprompter.app",
-                        name = "Google Creator",
-                        onSuccess = {
-                            Toast.makeText(context, "Signed in with Google", Toast.LENGTH_SHORT).show()
-                            onSignInSuccess()
-                        }
-                    )
+                    try {
+                        val signInIntent = viewModel.getGoogleSignInIntent(context)
+                        googleSignInLauncher.launch(signInIntent)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Could not open Google Sign-In: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -332,16 +274,13 @@ fun SignInScreen(
                     append("Privacy Policy")
                 }
             }
-
             Text(
                 text = termsText,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = TextDarkMuted,
                     fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 18.sp
-                ),
-                modifier = Modifier.padding(horizontal = 16.dp)
+                    color = TextDarkMuted,
+                    textAlign = TextAlign.Center
+                )
             )
         }
     }
@@ -356,42 +295,30 @@ private fun AuthSocialButton(
 ) {
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.height(52.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.White,
-            contentColor = TextDarkHeading
+            containerColor = Color.White
         ),
         border = ButtonDefaults.outlinedButtonBorder(true).copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE5E5E7))
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE2E8F0))
         )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier.width(40.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
                 icon()
             }
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 15.sp,
-                    color = TextDarkHeading
-                ),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
+                color = TextDarkHeading,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
             )
-            Box(
-                modifier = Modifier.width(40.dp),
-                contentAlignment = Alignment.Center
-            ) {}
         }
     }
 }

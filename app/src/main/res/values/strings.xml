@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">TelePrompter</string>
+    <string name="app_name">Teleprompter Plus</string>
     <string name="tagline">Your Script. Your Flow. On Camera.</string>
+    <string name="default_web_client_id" translatable="false">807901486310-167s2phmms20etqlhpsurar1krt31ud0.apps.googleusercontent.com</string>
 </resources>

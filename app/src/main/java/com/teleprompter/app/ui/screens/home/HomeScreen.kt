@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Description
@@ -109,7 +110,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(LightSurface)
+                .background(Color(0xFFF8FAFC))
         ) {
             // Header: Centered App Title with premium styling
             Row(
@@ -119,38 +120,47 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TeleprompterBrandTitle(fontSize = 24.sp, isDarkBackground = false)
+                TeleprompterBrandTitle(fontSize = 24.sp, isDarkBackground = false, showPlusBadge = true)
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Pro Badge - modern gradient look
+                    // Pro Badge - modern gradient pill
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(PinkGradient)
-                            .clickable(onClick = onNavigateToPro),
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFFF59E0B), Color(0xFFEC4899))
+                                )
+                            )
+                            .clickable(onClick = onNavigateToPro)
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("👑", fontSize = 20.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("👑", fontSize = 13.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("PRO", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        }
                     }
 
-                    // Search Button - premium pill design
+                    // Search Button - modern circle design
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(38.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF0F0F2))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFE2E8F0), CircleShape)
                             .clickable(onClick = onNavigateToSearch),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search",
-                            tint = TextDarkMuted,
-                            modifier = Modifier.size(22.dp)
+                            tint = Color(0xFF64748B),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -168,7 +178,11 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(52.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(color = ElectricBlue)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(ElectricBlue, Color(0xFF2563EB))
+                            )
+                        )
                         .clickable(onClick = onNavigateToCreateScript),
                     contentAlignment = Alignment.Center
                 ) {
@@ -214,11 +228,11 @@ fun HomeScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = LightSurface),
+                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White),
                     border = ButtonDefaults.outlinedButtonBorder(true).copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE0E0E2))
+                        brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE2E8F0))
                     )
                 ) {
                     Row(
@@ -253,8 +267,8 @@ fun HomeScreen(
                         modifier = Modifier
                             .tabIndicatorOffset(tabPositions[uiState.selectedTab])
                             .height(3.dp)
-                            .width(tabPositions[uiState.selectedTab].width * 0.6f)
-                            .clip(RoundedCornerShape(2.dp))
+                            .padding(horizontal = 20.dp)
+                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
                             .background(ElectricBlue)
                     )
                 },
@@ -262,8 +276,8 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(0.5.dp)
-                            .background(Color(0xFFE5E5E7))
+                            .height(1.dp)
+                            .background(Color(0xFFE2E8F0))
                     )
                 },
                 modifier = Modifier.padding(horizontal = 20.dp)

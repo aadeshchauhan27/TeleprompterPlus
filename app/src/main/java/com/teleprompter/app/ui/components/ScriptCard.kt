@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -33,27 +35,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.CyanGradient
-import com.teleprompter.app.core.theme.DeepNavyCard
-import com.teleprompter.app.core.theme.DeepNavyDark
-import com.teleprompter.app.core.theme.DeepNavySurface
 import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.ElectricBlueLight
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.LightCard
-import com.teleprompter.app.core.theme.LightSurface
-import com.teleprompter.app.core.theme.PurpleGradient
-import com.teleprompter.app.core.theme.TextDarkBody
-import com.teleprompter.app.core.theme.TextDarkBodySubtle
 import com.teleprompter.app.core.theme.TextDarkHeading
 import com.teleprompter.app.core.theme.TextDarkMuted
-import com.teleprompter.app.core.theme.TextLightSlate
 import com.teleprompter.app.core.util.ScriptUtils
 import com.teleprompter.app.data.local.entity.ScriptEntity
 
@@ -71,18 +62,43 @@ fun ScriptCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (script.isFavorite) ElectricBlueLight else LightSurface)
+            .shadow(
+                elevation = 2.dp,
+                shape = RoundedCornerShape(18.dp),
+                spotColor = Color(0x1A0F172A),
+                ambientColor = Color(0x0A0F172A)
+            )
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White)
             .border(
                 width = 1.dp,
-                color = if (script.isFavorite) ElectricBlue else LightBorderSubtle,
-                shape = RoundedCornerShape(16.dp)
+                color = if (script.isFavorite) ElectricBlue.copy(alpha = 0.45f) else Color(0xFFE2E8F0),
+                shape = RoundedCornerShape(18.dp)
             )
             .clickable(onClick = onClick)
-            .padding(18.dp)
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Header Row: Title + Favorite Indicator + 3-Dot Menu
+        // Left gradient accent stripe for favorite/active script
+        if (script.isFavorite) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(start = 0.dp)
+                    .width(4.dp)
+                    .clip(RoundedCornerShape(topStart = 18.dp, bottomStart = 18.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(ElectricBlue, Color(0xFF38BDF8))
+                        )
+                    )
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp)
+        ) {
+            // Header: Title + Star Favorite + Options Menu
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -90,37 +106,44 @@ fun ScriptCard(
             ) {
                 Text(
                     text = script.title.ifBlank { "Untitled Script" },
-                    style = MaterialTheme.typography.titleLarge.copy(
+                    style = MaterialTheme.typography.titleMedium.copy(
                         color = TextDarkHeading,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        letterSpacing = (-0.2).sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (script.isFavorite) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // One-tap Star Favorite Toggle
+                    IconButton(
+                        onClick = onFavoriteToggle,
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = "Favorite",
-                            tint = PurpleGradient,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .padding(end = 8.dp)
+                            imageVector = if (script.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                            contentDescription = if (script.isFavorite) "Unfavorite" else "Favorite",
+                            tint = if (script.isFavorite) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
+                    // More Options Dropdown
                     Box {
                         IconButton(
                             onClick = { menuExpanded = true },
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = "Options",
-                                tint = TextDarkMuted,
+                                tint = Color(0xFF64748B),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -128,7 +151,7 @@ fun ScriptCard(
                         DropdownMenu(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false },
-                            modifier = Modifier.background(LightSurface)
+                            modifier = Modifier.background(Color.White)
                         ) {
                             DropdownMenuItem(
                                 text = { Text(if (script.isFavorite) "Remove from Favorites" else "Add to Favorites") },
@@ -156,42 +179,95 @@ fun ScriptCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Body Text Preview
+            // Script Text Preview
             Text(
-                text = script.content.ifBlank { "No content" },
+                text = script.content.ifBlank { "Tap to write your script..." },
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = TextDarkBody,
-                    lineHeight = 22.sp
+                    color = if (script.content.isBlank()) Color(0xFF94A3B8) else Color(0xFF475569),
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp
                 ),
-                maxLines = 3,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Footer: Word count & Read time with modern pill design
+            // Footer Metadata Badges
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val metaText = ScriptUtils.formatScriptMeta(script.wordCount, script.estimatedReadingTime)
+                // Word Count Badge Pill
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFF0F0F2))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF1F5F9))
+                        .padding(horizontal = 9.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = metaText,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = TextDarkMuted,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = null,
+                            tint = Color(0xFF64748B),
+                            modifier = Modifier.size(13.dp)
                         )
-                    )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${script.wordCount} words",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF475569)
+                        )
+                    }
+                }
+
+                // Estimated Reading Time Badge Pill
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF1F5F9))
+                        .padding(horizontal = 9.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            tint = Color(0xFF64748B),
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        val readTimeStr = if (script.estimatedReadingTime <= 0) "< 1 min" else "${script.estimatedReadingTime} min"
+                        Text(
+                            text = readTimeStr,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF475569)
+                        )
+                    }
+                }
+
+                // Custom Settings Indicator if configured
+                if (script.hasCustomSettings) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(ElectricBlue.copy(alpha = 0.1f))
+                            .padding(horizontal = 9.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Customized",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ElectricBlue
+                        )
+                    }
                 }
             }
         }

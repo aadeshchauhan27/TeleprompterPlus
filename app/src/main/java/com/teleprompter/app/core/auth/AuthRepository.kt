@@ -1,12 +1,19 @@
 package com.teleprompter.app.core.auth
 
+import android.accounts.AccountManager
 import android.content.Context
+import android.content.Intent
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.teleprompter.app.R
 import com.teleprompter.app.data.repository.dataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +31,8 @@ import java.util.UUID
 interface AuthRepository {
     val currentUser: StateFlow<AuthUser?>
     val isUserSignedIn: StateFlow<Boolean>
+    fun getGoogleSignInIntent(context: Context): Intent
+    suspend fun handleSignInResult(intent: Intent?): Result<AuthUser>
     suspend fun signInWithGoogleToken(idToken: String, email: String? = null, name: String? = null): Result<AuthUser>
     suspend fun signInWithEmail(email: String, name: String? = null): Result<AuthUser>
     suspend fun continueAsGuest(): AuthUser
@@ -91,6 +100,105 @@ class AuthRepositoryImpl(
         }
     }
 
+    override fun getGoogleSignInIntent(context: Context): Intent {
+        val serverClientId = try {
+            this.context.getString(R.string.default_web_client_id)
+        } catch (_: Exception) {
+            ""
+        }
+        val hasRealWebClient = serverClientId.isNotBlank() && serverClientId != "dummy_web_client_id"
+
+        return if (hasRealWebClient) {
+            try {
+                val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestProfile()
+                    .requestIdToken(serverClientId)
+                GoogleSignIn.getClient(context, gsoBuilder.build()).signInIntent
+            } catch (_: Exception) {
+                AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), null, null, null, null)
+            }
+        } else {
+            AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), null, null, null, null)
+        }
+    }
+
+    override suspend fun handleSignInResult(intent: Intent?): Result<AuthUser> {
+        if (intent == null) {
+            return Result.failure(Exception("Sign-in was cancelled."))
+        }
+
+        // 1. Try GoogleSignIn with OAuth ID token for real Firebase Auth registration
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
+            val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+            val email = account.email ?: "creator@gmail.com"
+            val name = account.displayName ?: (account.givenName ?: "Google User")
+            val idToken = account.idToken
+            val photoUrl = account.photoUrl?.toString()
+
+            if (isFirebaseAvailable && !idToken.isNullOrBlank()) {
+                try {
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    val authResult = FirebaseAuth.getInstance().signInWithCredential(credential).await()
+                    val firebaseUser = authResult.user
+                    if (firebaseUser != null) {
+                        val user = AuthUser(
+                            id = firebaseUser.uid,
+                            email = firebaseUser.email ?: email,
+                            displayName = firebaseUser.displayName ?: name,
+                            photoUrl = firebaseUser.photoUrl?.toString() ?: photoUrl,
+                            isAnonymous = false
+                        )
+                        saveSession(user)
+                        _currentUser.value = user
+                        return Result.success(user)
+                    }
+                } catch (_: Exception) {}
+            }
+
+            val user = AuthUser(
+                id = "google_${email.hashCode()}",
+                email = email,
+                displayName = name,
+                photoUrl = photoUrl,
+                isAnonymous = false
+            )
+            saveSession(user)
+            _currentUser.value = user
+            return Result.success(user)
+        } catch (_: Exception) {}
+
+        // 2. Native Android Account Picker fallback
+        val accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+        if (!accountName.isNullOrBlank()) {
+            val email = accountName.trim()
+            val cleanName = email.substringBefore("@")
+                .replace(".", " ")
+                .replace("_", " ")
+                .replace("-", " ")
+                .split(" ")
+                .filter { it.isNotBlank() }
+                .joinToString(" ") { part ->
+                    part.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
+                .ifBlank { "Creator" }
+
+            val user = AuthUser(
+                id = "google_${email.hashCode()}",
+                email = email,
+                displayName = cleanName,
+                photoUrl = null,
+                isAnonymous = false
+            )
+            saveSession(user)
+            _currentUser.value = user
+            return Result.success(user)
+        }
+
+        return Result.failure(Exception("Sign-in cancelled or failed."))
+    }
+
     override suspend fun signInWithGoogleToken(
         idToken: String,
         email: String?,
@@ -127,7 +235,6 @@ class AuthRepositoryImpl(
             _currentUser.value = user
             Result.success(user)
         } catch (e: Exception) {
-            // Graceful fallback for offline mode
             val user = AuthUser(
                 id = "google_offline_${UUID.randomUUID().toString().take(8)}",
                 email = email ?: "user@gmail.com",
@@ -179,7 +286,6 @@ class AuthRepositoryImpl(
             prefs.remove(AuthKeys.IS_ANONYMOUS)
         }
         _currentUser.value = null
-        // Crucial: Local scripts and recordings are NOT deleted on sign out!
     }
 
     private suspend fun saveSession(user: AuthUser) {

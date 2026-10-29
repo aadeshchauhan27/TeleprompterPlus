@@ -1,29 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <group
-        android:scaleX="0.65"
-        android:scaleY="0.65"
-        android:translateX="18.9"
-        android:translateY="18.9">
-        <!-- Rounded bubble container -->
+        android:scaleX="0.72"
+        android:scaleY="0.72"
+        android:translateX="15.12"
+        android:translateY="15.12">
+        <!-- Squircle Teleprompter Glass Frame -->
         <path
-            android:fillColor="#0D1B2A"
+            android:fillColor="#131C31"
             android:strokeColor="#2563EB"
             android:strokeWidth="2.5"
-            android:pathData="M30,24 C23.4,24 18,29.4 18,36 L18,72 C18,78.6 23.4,84 30,84 L40,84 L46,92 L52,84 L78,84 C84.6,84 90,78.6 90,72 L90,36 C90,29.4 84.6,24 78,24 Z" />
-        <!-- Script 3 horizontal lines -->
+            android:pathData="M24,20 C19.6,20 16,23.6 16,28 L16,80 C16,84.4 19.6,88 24,88 L84,88 C88.4,88 92,84.4 92,80 L92,28 C92,23.6 88.4,20 84,20 Z" />
+
+        <!-- Camera Lens dot on top frame -->
+        <path
+            android:fillColor="#38BDF8"
+            android:pathData="M54,23 A2,2 0 1,1 54,27 A2,2 0 1,1 54,23" />
+
+        <!-- Script 3 horizontal lines (glowing white/cyan) -->
         <path
             android:strokeColor="#FFFFFF"
-            android:strokeWidth="3.5"
+            android:strokeWidth="3.2"
             android:strokeLineCap="round"
-            android:pathData="M28,42 L48,42 M28,54 L48,54 M28,66 L42,66" />
+            android:pathData="M26,42 L52,42 M26,54 L52,54 M26,66 L44,66" />
+
         <!-- Play triangle -->
         <path
             android:fillColor="#2563EB"
-            android:pathData="M56,42 L76,54 L56,66 Z" />
+            android:pathData="M58,45 L74,54 L58,63 Z" />
+
+        <!-- "PLUS" Symbol badge in Top-Right Corner with Cyan Glow -->
+        <path
+            android:fillColor="#2563EB"
+            android:pathData="M78,14 A9,9 0 1,1 78,32 A9,9 0 1,1 78,14" />
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2.4"
+            android:strokeLineCap="round"
+            android:pathData="M78,19 L78,27 M74,23 L82,23" />
     </group>
 </vector>
