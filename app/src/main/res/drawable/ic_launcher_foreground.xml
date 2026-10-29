@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.65"
+        android:scaleY="0.65"
+        android:translateX="18.9"
+        android:translateY="18.9">
+        <!-- Rounded bubble container -->
+        <path
+            android:fillColor="#0D1B2A"
+            android:strokeColor="#2563EB"
+            android:strokeWidth="2.5"
+            android:pathData="M30,24 C23.4,24 18,29.4 18,36 L18,72 C18,78.6 23.4,84 30,84 L40,84 L46,92 L52,84 L78,84 C84.6,84 90,78.6 90,72 L90,36 C90,29.4 84.6,24 78,24 Z" />
+        <!-- Script 3 horizontal lines -->
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3.5"
+            android:strokeLineCap="round"
+            android:pathData="M28,42 L48,42 M28,54 L48,54 M28,66 L42,66" />
+        <!-- Play triangle -->
+        <path
+            android:fillColor="#2563EB"
+            android:pathData="M56,42 L76,54 L56,66 Z" />
+    </group>
+</vector>
