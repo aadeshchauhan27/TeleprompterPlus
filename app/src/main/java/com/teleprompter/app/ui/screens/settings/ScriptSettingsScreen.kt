@@ -58,12 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.teleprompter.app.core.model.FontStyleType
 import com.teleprompter.app.core.model.PresetType
 import com.teleprompter.app.core.model.TextAlignmentType
-import com.teleprompter.app.core.theme.DeepNavyCard
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.LightBorderSubtle
 import com.teleprompter.app.core.theme.RecordRed
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import java.util.Locale
 
 @Composable
@@ -80,11 +75,11 @@ fun ScriptSettingsScreen(
 
     val textColors = listOf(
         "#FFFFFF", // White
-        "#0F172A", // Dark/Black
-        "#FFD600", // Yellow
-        "#38BDF8", // Sky Blue
-        "#2563EB", // Cobalt Blue
-        "#C084FC"  // Purple
+        "#FBBF24", // Warm Yellow
+        "#38BDF8", // Cyan
+        "#4ADE80", // Light Green
+        "#F472B6", // Rose
+        "#A78BFA"  // Lavender
     )
 
     val bgOpacities = listOf(
@@ -97,11 +92,11 @@ fun ScriptSettingsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
-        // Top Navigation Bar matching Screen 5 in mockup
+        // Top Navigation Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -114,7 +109,7 @@ fun ScriptSettingsScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextDarkHeading
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 Spacer(modifier = Modifier.width(6.dp))
@@ -122,33 +117,35 @@ fun ScriptSettingsScreen(
                     text = uiState.scriptTitle,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = TextDarkHeading,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 19.sp
                     ),
                     maxLines = 1
                 )
             }
 
-            // Blue "Done" Pill Button (Screen 5 in mockup)
+            // "Done" Pill Button
             Button(
                 onClick = {
                     viewModel.saveScriptSpecificSettings(onNavigateBack)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 shape = RoundedCornerShape(20.dp),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp, vertical = 4.dp),
                 modifier = Modifier.height(34.dp)
             ) {
                 Text(
                     text = "Done",
-                    color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp
                 )
             }
         }
 
-        HorizontalDivider(color = LightBorderSubtle)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
         Column(
             modifier = Modifier
@@ -158,7 +155,7 @@ fun ScriptSettingsScreen(
             // 0. LIVE INTERACTIVE TELEPROMPTER PREVIEW BOX
             SectionHeader(title = "Live Preview")
             val previewText = script?.content?.take(180)?.ifBlank { null }
-                ?: "Welcome to TelePrompter! You can read this script smoothly while recording yourself with natural eye contact."
+                ?: "Welcome to Teleprompter Plus! You can read this script smoothly while recording yourself with natural eye contact."
 
             val promptFontFamily = when (settings.fontStyle) {
                 FontStyleType.SERIF -> FontFamily.Serif
@@ -223,7 +220,7 @@ fun ScriptSettingsScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (isSelected) ElectricBlue else Color(0xFFF1F5F9))
+                            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { viewModel.applyPreset(preset) }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -232,7 +229,7 @@ fun ScriptSettingsScreen(
                             text = preset.label,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else TextDarkHeading
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -252,9 +249,9 @@ fun ScriptSettingsScreen(
                     onValueChange = { viewModel.setScrollSpeed(it.toInt()) },
                     valueRange = 10f..100f,
                     colors = SliderDefaults.colors(
-                        thumbColor = ElectricBlue,
-                        activeTrackColor = ElectricBlue,
-                        inactiveTrackColor = Color(0xFFE2E8F0)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -282,9 +279,9 @@ fun ScriptSettingsScreen(
                     onValueChange = { viewModel.setFontSize(it.toInt()) },
                     valueRange = 16f..56f,
                     colors = SliderDefaults.colors(
-                        thumbColor = ElectricBlue,
-                        activeTrackColor = ElectricBlue,
-                        inactiveTrackColor = Color(0xFFE2E8F0)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -351,7 +348,7 @@ fun ScriptSettingsScreen(
                             .weight(1f)
                             .height(44.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (isChosen) ElectricBlue else Color(0xFFF1F5F9))
+                            .background(if (isChosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { viewModel.setTextAlignment(align) },
                         contentAlignment = Alignment.Center
                     ) {
@@ -359,7 +356,7 @@ fun ScriptSettingsScreen(
                             Icon(
                                 imageVector = icon,
                                 contentDescription = align.label,
-                                tint = if (isChosen) Color.White else TextDarkHeading,
+                                tint = if (isChosen) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -367,7 +364,7 @@ fun ScriptSettingsScreen(
                                 text = align.label,
                                 fontSize = 13.sp,
                                 fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isChosen) Color.White else TextDarkHeading
+                                color = if (isChosen) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -384,7 +381,7 @@ fun ScriptSettingsScreen(
             ) {
                 Text(
                     text = "Line Spacing",
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.width(110.dp)
@@ -394,9 +391,9 @@ fun ScriptSettingsScreen(
                     onValueChange = { viewModel.setLineSpacing(it) },
                     valueRange = 0.8f..2.0f,
                     colors = SliderDefaults.colors(
-                        thumbColor = ElectricBlue,
-                        activeTrackColor = ElectricBlue,
-                        inactiveTrackColor = Color(0xFFE2E8F0)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -405,7 +402,7 @@ fun ScriptSettingsScreen(
                     text = String.format(Locale.US, "%.1fx", settings.lineSpacingMultiplier),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.width(40.dp)
                 )
             }
@@ -416,7 +413,7 @@ fun ScriptSettingsScreen(
             ) {
                 Text(
                     text = "Letter Spacing",
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.width(110.dp)
@@ -426,9 +423,9 @@ fun ScriptSettingsScreen(
                     onValueChange = { viewModel.setLetterSpacing(it) },
                     valueRange = -1.0f..3.0f,
                     colors = SliderDefaults.colors(
-                        thumbColor = ElectricBlue,
-                        activeTrackColor = ElectricBlue,
-                        inactiveTrackColor = Color(0xFFE2E8F0)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -437,7 +434,7 @@ fun ScriptSettingsScreen(
                     text = String.format(Locale.US, "%.1f", settings.letterSpacingSp),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.width(40.dp)
                 )
             }
@@ -461,7 +458,7 @@ fun ScriptSettingsScreen(
                             .background(color)
                             .border(
                                 width = if (isSelected) 3.dp else 1.dp,
-                                color = if (isSelected) ElectricBlue else LightBorderSubtle,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                                 shape = CircleShape
                             )
                             .clickable { viewModel.setTextColor(hex) },
@@ -471,7 +468,7 @@ fun ScriptSettingsScreen(
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                tint = if (hex == "#FFFFFF") ElectricBlue else Color.White,
+                                tint = if (hex == "#FFFFFF") Color.Black else Color.White,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -495,11 +492,11 @@ fun ScriptSettingsScreen(
                             .height(46.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(
-                                if (opacity == 0f) Color.Transparent else Color(0xFF0F172A).copy(alpha = opacity)
+                                if (opacity == 0f) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f) else MaterialTheme.colorScheme.onSurface.copy(alpha = opacity)
                             )
                             .border(
                                 width = if (isSelected) 2.5.dp else 1.dp,
-                                color = if (isSelected) ElectricBlue else LightBorderSubtle,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .clickable { viewModel.setBgOpacity(opacity) },
@@ -509,7 +506,7 @@ fun ScriptSettingsScreen(
                             text = label,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (opacity >= 0.5f) Color.White else TextDarkHeading
+                            color = if (opacity >= 0.5f) Color.White else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -525,7 +522,7 @@ fun ScriptSettingsScreen(
             ) {
                 Text(
                     text = "Width",
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.width(110.dp)
@@ -535,9 +532,9 @@ fun ScriptSettingsScreen(
                     onValueChange = { viewModel.setReadingWidth(it.toInt()) },
                     valueRange = 50f..100f,
                     colors = SliderDefaults.colors(
-                        thumbColor = ElectricBlue,
-                        activeTrackColor = ElectricBlue,
-                        inactiveTrackColor = Color(0xFFE2E8F0)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -546,7 +543,7 @@ fun ScriptSettingsScreen(
                     text = "${settings.readingWidthPercent}%",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.width(40.dp)
                 )
             }
@@ -557,7 +554,7 @@ fun ScriptSettingsScreen(
             ) {
                 Text(
                     text = "Lens Offset",
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.width(110.dp)
@@ -567,9 +564,9 @@ fun ScriptSettingsScreen(
                     onValueChange = { viewModel.setVerticalPosition(it.toInt()) },
                     valueRange = 10f..80f,
                     colors = SliderDefaults.colors(
-                        thumbColor = ElectricBlue,
-                        activeTrackColor = ElectricBlue,
-                        inactiveTrackColor = Color(0xFFE2E8F0)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -578,13 +575,13 @@ fun ScriptSettingsScreen(
                     text = "${settings.verticalPositionPercent}%",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.width(40.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(28.dp))
-            HorizontalDivider(color = LightBorderSubtle)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
             Spacer(modifier = Modifier.height(18.dp))
 
             // 10. Toggles: Mirror Text & Show Safe Area Guide
@@ -601,7 +598,7 @@ fun ScriptSettingsScreen(
                         text = "Mirror Text (Front Camera)",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium,
-                            color = TextDarkHeading
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -610,8 +607,8 @@ fun ScriptSettingsScreen(
                     checked = settings.mirrorText,
                     onCheckedChange = { viewModel.setMirrorText(it) },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = ElectricBlue
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
@@ -629,7 +626,7 @@ fun ScriptSettingsScreen(
                         text = "Show Safe Area Guide",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium,
-                            color = TextDarkHeading
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -638,8 +635,8 @@ fun ScriptSettingsScreen(
                     checked = settings.showSafeAreaGuide,
                     onCheckedChange = { viewModel.setShowSafeAreaGuide(it) },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = ElectricBlue
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
@@ -672,13 +669,13 @@ fun ScriptSettingsScreen(
                 Text(
                     text = "Reset Teleprompter Settings?",
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
                     text = "This will restore teleprompter speed, font, alignment, and appearance to default values. Scripts and recordings are preserved.",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             },
@@ -695,10 +692,10 @@ fun ScriptSettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmation = false }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -710,7 +707,7 @@ private fun SectionHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleMedium.copy(
             fontWeight = FontWeight.Bold,
-            color = TextDarkHeading,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp
         ),
         modifier = Modifier.padding(bottom = 12.dp)
@@ -726,7 +723,7 @@ private fun StepperPill(
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFFF1F5F9))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 4.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -737,7 +734,7 @@ private fun StepperPill(
             Icon(
                 imageVector = Icons.Default.Remove,
                 contentDescription = "Decrease",
-                tint = TextDarkHeading,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -746,7 +743,7 @@ private fun StepperPill(
             text = "$value",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            color = TextDarkHeading,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 6.dp)
         )
 
@@ -757,7 +754,7 @@ private fun StepperPill(
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Increase",
-                tint = TextDarkHeading,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -777,10 +774,10 @@ private fun FontStyleTile(
         modifier = modifier
             .height(80.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(if (isSelected) ElectricBlue.copy(alpha = 0.08f) else Color(0xFFF8FAFC))
+            .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface)
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) ElectricBlue else LightBorderSubtle,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(14.dp)
             )
             .clickable(onClick = onClick)
@@ -796,14 +793,14 @@ private fun FontStyleTile(
                 fontSize = 24.sp,
                 fontFamily = fontFamily,
                 fontWeight = FontWeight.Bold,
-                color = if (isSelected) ElectricBlue else TextDarkHeading
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = sublabel,
                 fontSize = 12.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) ElectricBlue else TextDarkMuted
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

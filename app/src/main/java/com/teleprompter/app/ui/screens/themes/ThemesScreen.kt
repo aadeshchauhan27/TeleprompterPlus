@@ -41,10 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teleprompter.app.core.model.PresetThemes
 import com.teleprompter.app.core.model.ThemeModel
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.ui.screens.settings.ScriptSettingsViewModel
 
 @Composable
@@ -59,10 +55,10 @@ fun ThemesScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
-        // Top Navigation Bar matching Screen 12 in mockup
+        // Top Navigation Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -73,7 +69,7 @@ fun ThemesScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             Spacer(modifier = Modifier.width(6.dp))
@@ -81,15 +77,15 @@ fun ThemesScreen(
                 text = "Themes",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp
                 )
             )
         }
 
-        HorizontalDivider(color = LightBorderSubtle)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
-        // 6-Theme Grid (Screen 12 in mockup: 3 columns or 2x3 grid)
+        // 6-Theme Grid
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(20.dp),
@@ -132,7 +128,7 @@ private fun ThemePreviewCard(
                 .background(bgColor)
                 .border(
                     width = if (isSelected) 2.5.dp else 1.dp,
-                    color = if (isSelected) ElectricBlue else LightBorderSubtle,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(14.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -144,7 +140,6 @@ private fun ThemePreviewCard(
                 color = textColor
             )
 
-            // Blue checkmark badge at top right if selected (matching Screen 12 in mockup)
             if (isSelected) {
                 Box(
                     modifier = Modifier
@@ -152,13 +147,13 @@ private fun ThemePreviewCard(
                         .padding(6.dp)
                         .size(20.dp)
                         .clip(CircleShape)
-                        .background(ElectricBlue),
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Selected",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(13.dp)
                     )
                 }
@@ -171,7 +166,7 @@ private fun ThemePreviewCard(
             text = theme.name,
             fontSize = 13.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) ElectricBlue else TextDarkMuted
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

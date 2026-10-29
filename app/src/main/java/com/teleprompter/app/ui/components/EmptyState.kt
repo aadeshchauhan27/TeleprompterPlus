@@ -52,13 +52,13 @@ fun EmptyState(
         Box(
             modifier = Modifier
                 .size(72.dp)
-                .background(Color(0xFFEFF6FF), CircleShape),
+                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = ElectricBlue,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(36.dp)
             )
         }
@@ -69,7 +69,7 @@ fun EmptyState(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = TextDarkHeading,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 18.sp
             ),
             textAlign = TextAlign.Center
@@ -80,7 +80,7 @@ fun EmptyState(
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyMedium.copy(
-                color = TextDarkMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 20.sp
             ),
             textAlign = TextAlign.Center
@@ -90,13 +90,15 @@ fun EmptyState(
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = onActionClick,
-                colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
                     text = actionLabel,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }

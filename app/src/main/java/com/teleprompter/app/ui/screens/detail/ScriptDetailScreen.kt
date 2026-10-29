@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -218,24 +219,26 @@ fun ScriptDetailScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Primary Action Buttons (High Contrast Monochrome)
-        Column(
+        // Primary Action Buttons on a Single Row (Side-by-side)
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Big Primary CTA: Start Teleprompter
+            // Primary CTA: Start Teleprompter
             Button(
                 onClick = { onStartTeleprompter(script.id) },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .weight(1f)
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
                 Row(
@@ -245,13 +248,14 @@ fun ScriptDetailScreen(
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(19.dp)
                     )
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = "Start Teleprompter",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Teleprompter",
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
                     )
                 }
             }
@@ -260,15 +264,16 @@ fun ScriptDetailScreen(
             OutlinedButton(
                 onClick = { onStartRecording(script.id) },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .weight(1f)
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
                 border = ButtonDefaults.outlinedButtonBorder(true).copy(
                     brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outline)
-                )
+                ),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -278,14 +283,15 @@ fun ScriptDetailScreen(
                         imageVector = Icons.Default.Videocam,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(19.dp)
                     )
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "Record Video",
-                        fontSize = 16.sp,
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
                     )
                 }
             }

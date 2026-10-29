@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -42,24 +40,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.CyanGradient
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.ElectricBlueLight
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.LightSurface
-import com.teleprompter.app.core.theme.PurpleGradient
-import com.teleprompter.app.core.theme.TextDarkBody
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.core.util.ScriptUtils
-import com.teleprompter.app.ui.screens.editor.SaveStatus
 
 @Composable
 fun ScriptEditorScreen(
@@ -73,11 +60,11 @@ fun ScriptEditorScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(LightSurface)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .imePadding()
     ) {
-        // Top Navigation Bar with premium styling
+        // Top Navigation Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +76,7 @@ fun ScriptEditorScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -99,25 +86,25 @@ fun ScriptEditorScreen(
                 when (uiState.saveStatus) {
                     SaveStatus.SAVING -> {
                         CircularProgressIndicator(
-                            color = ElectricBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 2.dp,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Saving...", fontSize = 12.sp, color = ElectricBlue)
+                        Text("Saving...", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                     }
                     SaveStatus.SAVED -> {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = CyanGradient,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Saved", fontSize = 12.sp, color = CyanGradient, fontWeight = FontWeight.SemiBold)
+                        Text("Saved", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     }
                     SaveStatus.DIRTY -> {
-                        Text("Unsaved changes", fontSize = 12.sp, color = TextDarkMuted)
+                        Text("Unsaved changes", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -131,30 +118,29 @@ fun ScriptEditorScreen(
             ) {
                 Text(
                     text = "Save",
-                    color = ElectricBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp
                 )
             }
         }
 
-        HorizontalDivider(color = Color(0xFFE5E5E7))
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
-        // Script Title Input Field with premium pill design
+        // Script Title Input Field
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color(0xFFF8FAFC))
-                .border(1.dp, Color(0xFFE5E5E7), RoundedCornerShape(14.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-                .clickable { /* Focus handler could be added here */ }
         ) {
             if (uiState.title.isEmpty()) {
                 Text(
                     text = "Script Title...",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -163,17 +149,17 @@ fun ScriptEditorScreen(
                 value = uiState.title,
                 onValueChange = { viewModel.onTitleChanged(it) },
                 textStyle = TextStyle(
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 ),
-                cursorBrush = SolidColor(ElectricBlue),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
         }
 
-        // Editor Toolbar with modern icons
+        // Editor Toolbar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -185,7 +171,7 @@ fun ScriptEditorScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFF0F0F2))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(horizontal = 4.dp, vertical = 4.dp)
                 ) {
                     IconButton(
@@ -195,7 +181,7 @@ fun ScriptEditorScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Undo,
                             contentDescription = "Undo",
-                            tint = if (uiState.canUndo) TextDarkHeading else TextDarkMuted.copy(alpha = 0.4f),
+                            tint = if (uiState.canUndo) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -207,7 +193,7 @@ fun ScriptEditorScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Redo,
                             contentDescription = "Redo",
-                            tint = if (uiState.canRedo) TextDarkHeading else TextDarkMuted.copy(alpha = 0.4f),
+                            tint = if (uiState.canRedo) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -218,7 +204,7 @@ fun ScriptEditorScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFF0F0F2))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(horizontal = 4.dp, vertical = 4.dp)
                 ) {
                     IconButton(
@@ -232,7 +218,7 @@ fun ScriptEditorScreen(
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy",
-                            tint = TextDarkHeading,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -253,7 +239,7 @@ fun ScriptEditorScreen(
                         Icon(
                             imageVector = Icons.Default.ContentPaste,
                             contentDescription = "Paste",
-                            tint = TextDarkHeading,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -261,7 +247,7 @@ fun ScriptEditorScreen(
             }
         }
 
-        HorizontalDivider(color = Color(0xFFE5E5E7))
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
         // Script Body text area
         Box(
@@ -273,7 +259,7 @@ fun ScriptEditorScreen(
             if (uiState.content.isEmpty()) {
                 Text(
                     text = "Start typing or pasting your script here...\n\nEvery change saves automatically.",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 17.sp,
                     lineHeight = 26.sp
                 )
@@ -283,12 +269,12 @@ fun ScriptEditorScreen(
                 value = uiState.content,
                 onValueChange = { viewModel.onContentChanged(it) },
                 textStyle = TextStyle(
-                    color = TextDarkBody,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 17.sp,
                     lineHeight = 28.sp,
                     fontWeight = FontWeight.Normal
                 ),
-                cursorBrush = SolidColor(ElectricBlue),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -297,13 +283,13 @@ fun ScriptEditorScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(ElectricBlue)
+                    .background(MaterialTheme.colorScheme.primary)
                     .padding(horizontal = 14.dp, vertical = 8.dp)
             ) {
                 val metaText = ScriptUtils.formatScriptMeta(uiState.wordCount, uiState.estimatedReadingSeconds)
                 Text(
                     text = metaText,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )

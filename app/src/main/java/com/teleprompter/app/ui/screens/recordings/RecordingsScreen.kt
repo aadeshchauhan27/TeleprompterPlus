@@ -41,7 +41,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -63,11 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.LightBorderSubtle
 import com.teleprompter.app.core.theme.RecordRed
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.data.local.entity.RecordingEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -93,7 +88,7 @@ fun RecordingsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -108,14 +103,14 @@ fun RecordingsScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             Text(
                 text = "My Recordings",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp
                 )
             )
@@ -124,23 +119,23 @@ fun RecordingsScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFE2E8F0))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = "${recordings.size}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextDarkMuted
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         }
 
-        HorizontalDivider(color = LightBorderSubtle)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
         if (recordings.isEmpty()) {
-            // Clean Empty State (Screen requirements: No dummy data!)
+            // Clean Empty State
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -155,13 +150,13 @@ fun RecordingsScreen(
                         modifier = Modifier
                             .size(72.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF1F5F9)),
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Videocam,
                             contentDescription = null,
-                            tint = TextDarkMuted,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -172,7 +167,7 @@ fun RecordingsScreen(
                         text = "No recordings yet",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = TextDarkHeading,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 18.sp
                         )
                     )
@@ -182,7 +177,7 @@ fun RecordingsScreen(
                     Text(
                         text = "When you record videos using the teleprompter, your saved takes will appear here.",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = TextDarkMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         ),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -233,13 +228,13 @@ fun RecordingsScreen(
                 Text(
                     text = "Delete Recording?",
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
                     text = "This will permanently delete \"${item.title}\" and remove the video file from your device.",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             },
@@ -257,10 +252,10 @@ fun RecordingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { recordingToDelete = null }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -274,7 +269,7 @@ fun RecordingsScreen(
                 Text(
                     text = "Rename Recording",
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
@@ -294,17 +289,20 @@ fun RecordingsScreen(
                         }
                         recordingToRename = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
-                    Text("Save", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Save", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { recordingToRename = null }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -341,8 +339,8 @@ private fun RecordingCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF8FAFC))
-            .border(1.dp, LightBorderSubtle, RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             .clickable(onClick = onPlay)
             .padding(14.dp)
     ) {
@@ -358,7 +356,6 @@ private fun RecordingCard(
                     .background(Color(0xFF0F172A)),
                 contentAlignment = Alignment.Center
             ) {
-                // Efficient async thumbnail bitmap loader
                 AsyncVideoThumbnail(
                     thumbnailPath = recording.thumbnailPath,
                     modifier = Modifier.fillMaxSize()
@@ -408,7 +405,7 @@ private fun RecordingCard(
                     text = recording.title,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = TextDarkHeading,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 15.sp
                     ),
                     maxLines = 1,
@@ -420,7 +417,7 @@ private fun RecordingCard(
                 Text(
                     text = formattedDate,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = TextDarkMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                 )
@@ -430,7 +427,7 @@ private fun RecordingCard(
                 Text(
                     text = formattedSize,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = ElectricBlue,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium,
                         fontSize = 11.sp
                     )
@@ -443,7 +440,7 @@ private fun RecordingCard(
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "More",
-                        tint = TextDarkMuted
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 

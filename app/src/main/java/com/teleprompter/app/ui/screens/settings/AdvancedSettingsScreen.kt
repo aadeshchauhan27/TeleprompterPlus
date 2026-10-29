@@ -248,7 +248,7 @@ fun AdvancedSettingsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFFEF2F2))
+                    .background(RecordRed.copy(alpha = 0.12f))
                     .clickable { showResetConfirmation = true }
                     .padding(16.dp)
             ) {
@@ -279,7 +279,7 @@ fun AdvancedSettingsScreen(
     if (showCameraDialog) {
         AlertDialog(
             onDismissRequest = { showCameraDialog = false },
-            title = { Text("Default Camera", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            title = { Text("Default Camera", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
                     listOf(
@@ -300,13 +300,13 @@ fun AdvancedSettingsScreen(
                                 text = label,
                                 fontSize = 15.sp,
                                 fontWeight = if (settings.defaultCameraLens == lens) FontWeight.Bold else FontWeight.Normal,
-                                color = if (settings.defaultCameraLens == lens) ElectricBlue else TextDarkHeading
+                                color = if (settings.defaultCameraLens == lens) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showCameraDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
+            confirmButton = { TextButton(onClick = { showCameraDialog = false }) { Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
@@ -316,7 +316,7 @@ fun AdvancedSettingsScreen(
     if (showQualityDialog) {
         AlertDialog(
             onDismissRequest = { showQualityDialog = false },
-            title = { Text("Video Quality", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            title = { Text("Video Quality", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf(
@@ -328,7 +328,7 @@ fun AdvancedSettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (settings.videoQuality == quality) Color(0xFFF1F5F9) else Color.Transparent)
+                                .background(if (settings.videoQuality == quality) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
                                 .clickable {
                                     viewModel.setVideoQuality(quality)
                                     showQualityDialog = false
@@ -339,18 +339,18 @@ fun AdvancedSettingsScreen(
                                 text = quality.label,
                                 fontSize = 15.sp,
                                 fontWeight = if (settings.videoQuality == quality) FontWeight.Bold else FontWeight.SemiBold,
-                                color = if (settings.videoQuality == quality) ElectricBlue else TextDarkHeading
+                                color = if (settings.videoQuality == quality) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = quality.description,
                                 fontSize = 12.sp,
-                                color = TextDarkMuted
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showQualityDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
+            confirmButton = { TextButton(onClick = { showQualityDialog = false }) { Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
@@ -360,7 +360,7 @@ fun AdvancedSettingsScreen(
     if (showPresetDialog) {
         AlertDialog(
             onDismissRequest = { showPresetDialog = false },
-            title = { Text("Default Preset", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            title = { Text("Default Preset", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf(PresetType.CREATOR, PresetType.INTERVIEW, PresetType.REELS, PresetType.CUSTOM).forEach { preset ->
@@ -368,7 +368,7 @@ fun AdvancedSettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (settings.presetType == preset) Color(0xFFF1F5F9) else Color.Transparent)
+                                .background(if (settings.presetType == preset) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
                                 .clickable {
                                     viewModel.applyPreset(preset)
                                     showPresetDialog = false
@@ -379,18 +379,18 @@ fun AdvancedSettingsScreen(
                                 text = preset.label,
                                 fontSize = 15.sp,
                                 fontWeight = if (settings.presetType == preset) FontWeight.Bold else FontWeight.SemiBold,
-                                color = if (settings.presetType == preset) ElectricBlue else TextDarkHeading
+                                color = if (settings.presetType == preset) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = preset.description,
                                 fontSize = 12.sp,
-                                color = TextDarkMuted
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showPresetDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
+            confirmButton = { TextButton(onClick = { showPresetDialog = false }) { Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
@@ -400,7 +400,7 @@ fun AdvancedSettingsScreen(
     if (showCountdownDialog) {
         AlertDialog(
             onDismissRequest = { showCountdownDialog = false },
-            title = { Text("Countdown Duration", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            title = { Text("Countdown Duration", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
                     listOf(0, 3, 5, 10).forEach { sec ->
@@ -418,13 +418,13 @@ fun AdvancedSettingsScreen(
                                 text = if (sec == 0) "Off" else "$sec seconds",
                                 fontSize = 15.sp,
                                 fontWeight = if (settings.countdownSeconds == sec) FontWeight.Bold else FontWeight.Normal,
-                                color = if (settings.countdownSeconds == sec) ElectricBlue else TextDarkHeading
+                                color = if (settings.countdownSeconds == sec) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showCountdownDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
+            confirmButton = { TextButton(onClick = { showCountdownDialog = false }) { Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
@@ -434,7 +434,7 @@ fun AdvancedSettingsScreen(
     if (showThemeDialog) {
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text("Appearance / Dark Mode", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            title = { Text("Appearance / Dark Mode", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
                     listOf(
@@ -456,13 +456,13 @@ fun AdvancedSettingsScreen(
                                 text = label,
                                 fontSize = 15.sp,
                                 fontWeight = if (settings.appThemeMode == mode) FontWeight.Bold else FontWeight.Normal,
-                                color = if (settings.appThemeMode == mode) ElectricBlue else TextDarkHeading
+                                color = if (settings.appThemeMode == mode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showThemeDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
+            confirmButton = { TextButton(onClick = { showThemeDialog = false }) { Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
@@ -472,11 +472,11 @@ fun AdvancedSettingsScreen(
     if (showResetConfirmation) {
         AlertDialog(
             onDismissRequest = { showResetConfirmation = false },
-            title = { Text("Reset Teleprompter Settings?", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            title = { Text("Reset Teleprompter Settings?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Text(
                     text = "This will reset all teleprompter speed, font size, camera defaults, and window layout preferences to factory defaults. Your scripts and recordings will remain safe.",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             },
@@ -494,7 +494,7 @@ fun AdvancedSettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmation = false }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,

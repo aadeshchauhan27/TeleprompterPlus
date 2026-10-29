@@ -533,13 +533,13 @@ fun OverlayCustomizationSheet(
                 Text(
                     text = "Reset Teleprompter Settings?",
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
                     text = "This will restore teleprompter speed, font, width, and colors to their default values. Your scripts and recordings will remain untouched.",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             },
@@ -556,10 +556,10 @@ fun OverlayCustomizationSheet(
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmation = false }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }

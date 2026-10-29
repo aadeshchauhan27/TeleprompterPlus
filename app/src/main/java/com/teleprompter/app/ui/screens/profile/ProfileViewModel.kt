@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teleprompter.app.core.auth.AuthRepository
 import com.teleprompter.app.core.auth.AuthUser
+import com.teleprompter.app.core.model.AppThemeMode
+import com.teleprompter.app.data.repository.SettingsRepository
 import com.teleprompter.app.data.sync.SyncRepository
 import com.teleprompter.app.data.sync.SyncStatus
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,25 +19,29 @@ data class ProfileUiState(
     val syncStatus: SyncStatus = SyncStatus.IDLE,
     val isCloudSyncEnabled: Boolean = true,
     val lastSyncTime: Long = 0L,
-    val isSigningOut: Boolean = false
+    val isSigningOut: Boolean = false,
+    val appThemeMode: AppThemeMode = AppThemeMode.SYSTEM
 )
 
 class ProfileViewModel(
     private val authRepository: AuthRepository,
-    private val syncRepository: SyncRepository
+    private val syncRepository: SyncRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<ProfileUiState> = combine(
         authRepository.currentUser,
         syncRepository.syncStatus,
         syncRepository.isCloudSyncEnabled,
-        syncRepository.lastSyncTime
-    ) { user, syncStatus, isSyncEnabled, lastSyncTime ->
+        syncRepository.lastSyncTime,
+        settingsRepository.settingsFlow
+    ) { user, syncStatus, isSyncEnabled, lastSyncTime, settings ->
         ProfileUiState(
             user = user,
             syncStatus = syncStatus,
             isCloudSyncEnabled = isSyncEnabled,
-            lastSyncTime = lastSyncTime
+            lastSyncTime = lastSyncTime,
+            appThemeMode = settings.appThemeMode
         )
     }.stateIn(
         scope = viewModelScope,
@@ -52,6 +58,12 @@ class ProfileViewModel(
     fun syncNow() {
         viewModelScope.launch {
             syncRepository.syncNow()
+        }
+    }
+
+    fun setAppThemeMode(themeMode: AppThemeMode) {
+        viewModelScope.launch {
+            settingsRepository.updateAppThemeMode(themeMode)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.teleprompter.app.ui.screens.profile
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,18 +25,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.SyncProblem
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -44,7 +45,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
@@ -61,17 +61,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
+import com.teleprompter.app.core.model.AppThemeMode
+import com.teleprompter.app.core.theme.RecordRed
 import com.teleprompter.app.data.sync.SyncStatus
 import com.teleprompter.app.ui.AppViewModelProvider
 import java.text.SimpleDateFormat
@@ -92,6 +89,7 @@ fun CloudSyncProfileScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var showSignOutDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
 
     val user = uiState.user
     val isGuest = user == null || user.isAnonymous
@@ -101,7 +99,7 @@ fun CloudSyncProfileScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -116,20 +114,20 @@ fun CloudSyncProfileScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             Text(
                 text = "Cloud Sync & Profile",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp
                 )
             )
         }
 
-        HorizontalDivider(color = LightBorderSubtle)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
         Column(
             modifier = Modifier
@@ -137,13 +135,13 @@ fun CloudSyncProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp)
         ) {
-            // User Card (Screen 14 in mockup)
+            // User Card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFF8FAFC))
-                    .border(1.dp, LightBorderSubtle, RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
@@ -156,13 +154,13 @@ fun CloudSyncProfileScreen(
                             modifier = Modifier
                                 .size(56.dp)
                                 .clip(CircleShape)
-                                .background(if (isGuest) Color(0xFFE2E8F0) else ElectricBlue.copy(alpha = 0.12f)),
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Person,
                                 contentDescription = null,
-                                tint = if (isGuest) Color(0xFF64748B) else ElectricBlue,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
@@ -174,7 +172,7 @@ fun CloudSyncProfileScreen(
                                 text = if (isGuest) userName else userEmail,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = TextDarkHeading,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 16.sp
                                 )
                             )
@@ -186,14 +184,14 @@ fun CloudSyncProfileScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(6.dp))
-                                        .background(Color(0xFFE2E8F0))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
                                         .padding(horizontal = 8.dp, vertical = 2.dp)
-                                    ) {
+                                ) {
                                     Text(
                                         text = if (isGuest) "Local-First" else "Cloud Sync Active",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = TextDarkMuted
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -210,13 +208,15 @@ fun CloudSyncProfileScreen(
                                 .fillMaxWidth()
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
                         ) {
                             Text(
                                 text = "Sign in for Cloud Backup",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color.White
+                                fontSize = 15.sp
                             )
                         }
                     } else {
@@ -242,7 +242,7 @@ fun CloudSyncProfileScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Sync & Backup Toggle Row
             Row(
@@ -263,13 +263,13 @@ fun CloudSyncProfileScreen(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF1F5F9)),
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (uiState.isCloudSyncEnabled) Icons.Outlined.CloudDone else Icons.Outlined.CloudOff,
                             contentDescription = null,
-                            tint = if (uiState.isCloudSyncEnabled) ElectricBlue else Color(0xFF94A3B8),
+                            tint = if (uiState.isCloudSyncEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -279,7 +279,7 @@ fun CloudSyncProfileScreen(
                             text = "Sync & Backup",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextDarkHeading,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 15.sp
                             )
                         )
@@ -290,7 +290,7 @@ fun CloudSyncProfileScreen(
                                 "Paused (Local storage only)"
                             },
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = TextDarkMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
                             )
                         )
@@ -305,10 +305,10 @@ fun CloudSyncProfileScreen(
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = ElectricBlue,
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color(0xFFCBD5E1)
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
             }
@@ -319,8 +319,8 @@ fun CloudSyncProfileScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF8FAFC))
-                    .border(1.dp, LightBorderSubtle, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                     .padding(14.dp)
             ) {
                 Row(
@@ -331,12 +331,12 @@ fun CloudSyncProfileScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             val (statusText, statusColor, statusIcon) = when (uiState.syncStatus) {
-                                SyncStatus.SYNCING -> Triple("Syncing with cloud...", ElectricBlue, Icons.Outlined.CloudUpload)
+                                SyncStatus.SYNCING -> Triple("Syncing with cloud...", MaterialTheme.colorScheme.primary, Icons.Outlined.CloudUpload)
                                 SyncStatus.SUCCESS -> Triple("All scripts up to date", Color(0xFF10B981), Icons.Outlined.CheckCircle)
                                 SyncStatus.ERROR -> Triple("Sync offline (cached locally)", Color(0xFFF59E0B), Icons.Outlined.SyncProblem)
-                                SyncStatus.OFFLINE -> Triple("Offline mode", Color(0xFF64748B), Icons.Outlined.CloudOff)
-                                SyncStatus.DISABLED -> Triple("Sync disabled", Color(0xFF64748B), Icons.Outlined.CloudOff)
-                                SyncStatus.IDLE -> Triple("Ready to sync", Color(0xFF64748B), Icons.Outlined.CloudDone)
+                                SyncStatus.OFFLINE -> Triple("Offline mode", MaterialTheme.colorScheme.onSurfaceVariant, Icons.Outlined.CloudOff)
+                                SyncStatus.DISABLED -> Triple("Sync disabled", MaterialTheme.colorScheme.onSurfaceVariant, Icons.Outlined.CloudOff)
+                                SyncStatus.IDLE -> Triple("Ready to sync", MaterialTheme.colorScheme.onSurfaceVariant, Icons.Outlined.CloudDone)
                             }
 
                             Icon(
@@ -358,14 +358,14 @@ fun CloudSyncProfileScreen(
                         Text(
                             text = "Last synced: ${formatLastSync(uiState.lastSyncTime)}",
                             fontSize = 11.sp,
-                            color = TextDarkMuted
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     if (uiState.syncStatus == SyncStatus.SYNCING) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = ElectricBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 2.dp
                         )
                     } else {
@@ -375,16 +375,17 @@ fun CloudSyncProfileScreen(
                                 Toast.makeText(context, "Synchronizing...", Toast.LENGTH_SHORT).show()
                             },
                             shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Refresh,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
-                                tint = ElectricBlue
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Sync Now", fontSize = 12.sp, color = ElectricBlue)
+                            Text("Sync Now", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -396,15 +397,15 @@ fun CloudSyncProfileScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF0FDF4))
-                    .border(1.dp, Color(0xFFDCFCE7), RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
                     .padding(14.dp)
             ) {
                 Row(verticalAlignment = Alignment.Top) {
                     Icon(
                         imageVector = Icons.Outlined.Security,
                         contentDescription = null,
-                        tint = Color(0xFF16A34A),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
@@ -413,82 +414,30 @@ fun CloudSyncProfileScreen(
                             text = "Local-First & Privacy Guarantee",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = Color(0xFF166534)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Your scripts and teleprompter settings sync safely to your cloud. Video recordings remain 100% private and never leave this device.",
                             fontSize = 12.sp,
                             lineHeight = 16.sp,
-                            color = Color(0xFF15803D)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            HorizontalDivider(color = LightBorderSubtle, modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), modifier = Modifier.padding(vertical = 4.dp))
 
-            // Storage Meter Row
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 14.dp, horizontal = 4.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFF1F5F9)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Storage,
-                                contentDescription = null,
-                                tint = TextDarkHeading,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "Cloud Storage Used",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextDarkHeading,
-                                fontSize = 15.sp
-                            )
-                        )
-                    }
-                    Text(
-                        text = if (isGuest) "Local Only" else "12 KB of 1 GB",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = TextDarkMuted,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                }
+            // Appearance / Dark Mode Row
+            ProfileNavRow(
+                icon = Icons.Outlined.DarkMode,
+                title = "Appearance / Dark Mode",
+                subtitle = uiState.appThemeMode.label,
+                onClick = { showThemeDialog = true }
+            )
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                LinearProgressIndicator(
-                    progress = { if (isGuest) 0.001f else 0.012f },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp)),
-                    color = ElectricBlue,
-                    trackColor = Color(0xFFE2E8F0),
-                    strokeCap = StrokeCap.Round
-                )
-            }
-
-            HorizontalDivider(color = LightBorderSubtle, modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
             // Navigation Rows: My Scripts
             ProfileNavRow(
@@ -497,7 +446,7 @@ fun CloudSyncProfileScreen(
                 onClick = onNavigateToMyScripts
             )
 
-            HorizontalDivider(color = LightBorderSubtle)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
             // Navigation Rows: Trash
             ProfileNavRow(
@@ -508,23 +457,23 @@ fun CloudSyncProfileScreen(
                 }
             )
 
-            HorizontalDivider(color = LightBorderSubtle)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
             // Navigation Rows: Settings
             ProfileNavRow(
                 icon = Icons.Outlined.Settings,
-                title = "Settings",
+                title = "Teleprompter Settings",
                 onClick = onNavigateToAdvancedSettings
             )
 
-            HorizontalDivider(color = LightBorderSubtle)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
             // Navigation Rows: Sign Out / Switch Account
             ProfileNavRow(
                 icon = Icons.AutoMirrored.Outlined.ExitToApp,
                 title = if (isGuest) "Switch Account / Sign In" else "Sign Out",
-                iconTint = if (isGuest) ElectricBlue else Color(0xFFEF4444),
-                textColor = if (isGuest) ElectricBlue else Color(0xFFEF4444),
+                iconTint = if (isGuest) MaterialTheme.colorScheme.primary else RecordRed,
+                textColor = if (isGuest) MaterialTheme.colorScheme.primary else RecordRed,
                 onClick = {
                     if (isGuest) {
                         onNavigateToSignIn()
@@ -532,6 +481,55 @@ fun CloudSyncProfileScreen(
                         showSignOutDialog = true
                     }
                 }
+            )
+        }
+
+        // Appearance / Dark Mode Dialog
+        if (showThemeDialog) {
+            AlertDialog(
+                onDismissRequest = { showThemeDialog = false },
+                title = {
+                    Text(
+                        text = "Appearance / Theme",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                text = {
+                    Column {
+                        listOf(
+                            Pair(AppThemeMode.SYSTEM, "System Default (Follow OS)"),
+                            Pair(AppThemeMode.LIGHT, "Light Mode (Minimalist Black & White)"),
+                            Pair(AppThemeMode.DARK, "Dark Mode (Obsidian Black)")
+                        ).forEach { (mode, label) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        viewModel.setAppThemeMode(mode)
+                                        showThemeDialog = false
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (uiState.appThemeMode == mode) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (uiState.appThemeMode == mode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showThemeDialog = false }) {
+                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(16.dp)
             )
         }
 
@@ -543,13 +541,13 @@ fun CloudSyncProfileScreen(
                     Text(
                         text = "Sign Out?",
                         fontWeight = FontWeight.Bold,
-                        color = TextDarkHeading
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 text = {
                     Text(
                         text = "Your local scripts and recordings will remain safe on this device. Cloud sync will be paused until you sign in again.",
-                        color = TextDarkMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         lineHeight = 20.sp
                     )
@@ -563,16 +561,18 @@ fun CloudSyncProfileScreen(
                                 onSignOut()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
+                        colors = ButtonDefaults.buttonColors(containerColor = RecordRed)
                     ) {
                         Text("Sign Out", color = Color.White)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showSignOutDialog = false }) {
-                        Text("Cancel", color = TextDarkMuted)
+                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(16.dp)
             )
         }
     }
@@ -593,15 +593,17 @@ private fun formatLastSync(timestamp: Long): String {
 private fun ProfileNavRow(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
     onClick: () -> Unit,
-    iconTint: Color = TextDarkHeading,
-    textColor: Color = TextDarkHeading
+    iconTint: Color = MaterialTheme.colorScheme.onSurface,
+    textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 16.dp, horizontal = 4.dp),
+            .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -610,7 +612,7 @@ private fun ProfileNavRow(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFF1F5F9)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -621,20 +623,32 @@ private fun ProfileNavRow(
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = textColor,
-                    fontSize = 15.sp
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = textColor,
+                        fontSize = 15.sp
+                    )
                 )
-            )
+                if (subtitle != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp
+                        )
+                    )
+                }
+            }
         }
 
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = TextDarkMuted,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
         )
     }

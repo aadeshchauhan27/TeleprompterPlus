@@ -80,7 +80,8 @@ object AppViewModelProvider {
         initializer {
             ProfileViewModel(
                 authRepository = telePrompterApp().container.authRepository,
-                syncRepository = telePrompterApp().container.syncRepository
+                syncRepository = telePrompterApp().container.syncRepository,
+                settingsRepository = telePrompterApp().container.settingsRepository
             )
         }
     }

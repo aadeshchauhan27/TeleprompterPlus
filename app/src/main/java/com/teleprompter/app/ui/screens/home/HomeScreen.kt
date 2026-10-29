@@ -3,6 +3,17 @@ package com.teleprompter.app.ui.screens.home
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +30,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +37,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Description
@@ -38,9 +49,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -48,10 +58,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -76,25 +90,108 @@ fun HomeScreen(
     val context = LocalContext.current
     val tabs = listOf("All", "Recent", "Favorites")
 
+    var isFabExpanded by remember { mutableStateOf(false) }
+    val fabRotation by animateFloatAsState(
+        targetValue = if (isFabExpanded) 45f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "fab_rotation"
+    )
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
             .statusBarsPadding(),
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToCreateScript,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp, pressedElevation = 10.dp),
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "New Script",
-                    modifier = Modifier.size(28.dp)
-                )
+                // Animated speed-dial mini FABs (Icons only)
+                AnimatedVisibility(
+                    visible = isFabExpanded,
+                    enter = fadeIn(tween(180)) + scaleIn(tween(180)) + slideInVertically(tween(180)) { it / 2 },
+                    exit = fadeOut(tween(150)) + scaleOut(tween(150)) + slideOutVertically(tween(150)) { it / 2 }
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Choice 1: Paste from Clipboard (Icon only)
+                        SmallFloatingActionButton(
+                            onClick = {
+                                isFabExpanded = false
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                                val clip = clipboard?.primaryClip
+                                if (clip != null && clip.itemCount > 0) {
+                                    val pastedText = clip.getItemAt(0).text?.toString() ?: ""
+                                    if (pastedText.isNotBlank()) {
+                                        viewModel.pasteFromClipboard(pastedText) { newId ->
+                                            Toast.makeText(context, "Script created from clipboard", Toast.LENGTH_SHORT).show()
+                                            onNavigateToScriptDetail(newId)
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            shape = CircleShape,
+                            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
+                            modifier = Modifier
+                                .size(48.dp)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentPaste,
+                                contentDescription = "Paste from Clipboard",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        // Choice 2: Create Blank Script (Icon only)
+                        SmallFloatingActionButton(
+                            onClick = {
+                                isFabExpanded = false
+                                onNavigateToCreateScript()
+                            },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            shape = CircleShape,
+                            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
+                            modifier = Modifier
+                                .size(48.dp)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Create Blank Script",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Primary Floating Action Button (+)
+                FloatingActionButton(
+                    onClick = { isFabExpanded = !isFabExpanded },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = CircleShape,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp, pressedElevation = 10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "New Script Options",
+                        modifier = Modifier
+                            .size(28.dp)
+                            .graphicsLayer(rotationZ = fabRotation)
+                    )
+                }
             }
         },
         bottomBar = {
@@ -143,61 +240,7 @@ fun HomeScreen(
                 }
             }
 
-            // Quick Paste Action Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedButton(
-                    onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-                        val clip = clipboard?.primaryClip
-                        if (clip != null && clip.itemCount > 0) {
-                            val pastedText = clip.getItemAt(0).text?.toString() ?: ""
-                            if (pastedText.isNotBlank()) {
-                                viewModel.pasteFromClipboard(pastedText) { newId ->
-                                    Toast.makeText(context, "Script created from clipboard", Toast.LENGTH_SHORT).show()
-                                    onNavigateToScriptDetail(newId)
-                                }
-                            } else {
-                                Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = ButtonDefaults.outlinedButtonBorder(true).copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outline)
-                    )
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ContentPaste,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(19.dp)
-                        )
-                        Text(
-                            text = "Paste Script from Clipboard",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Filter Tabs - Clean Monochrome Segmented Tabs
             TabRow(
@@ -241,7 +284,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Script List / Loading / Empty State
             when {
@@ -261,7 +304,7 @@ fun HomeScreen(
                     val emptyMessage = when (uiState.selectedTab) {
                         1 -> Pair("No Recent Scripts", "Scripts you view or edit recently will appear here.")
                         2 -> Pair("No Favorites Yet", "Tap the star icon on any script to quickly access it from favorites.")
-                        else -> Pair("No Scripts Created", "Tap the + button below or paste from clipboard to create your first script.")
+                        else -> Pair("No Scripts Created", "Tap the + button below to create your first script or paste from clipboard.")
                     }
                     EmptyState(
                         title = emptyMessage.first,
@@ -273,7 +316,7 @@ fun HomeScreen(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         items(

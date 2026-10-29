@@ -52,11 +52,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.data.local.model.FolderWithCount
+import com.teleprompter.app.core.theme.RecordRed
 import com.teleprompter.app.ui.components.EmptyState
 import com.teleprompter.app.ui.components.ScriptCard
 
@@ -75,18 +72,19 @@ fun FolderScreen(
     val folderColors = listOf(
         "#3B82F6", // Blue
         "#8B5CF6", // Purple
-        "#F59E0B", // Yellow
-        "#F43F5E", // Coral
+        "#EC4899", // Pink
+        "#F59E0B", // Amber
+        "#10B981", // Emerald
         "#14B8A6"  // Teal
     )
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
-        // Top Bar matching Screen 11 in mockup ("<", "My Scripts", Right Blue Circular "+")
+        // Top Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,7 +105,7 @@ fun FolderScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextDarkHeading
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
@@ -117,18 +115,18 @@ fun FolderScreen(
                     text = if (uiState.selectedFolderId != null) uiState.selectedFolderName else "My Scripts",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = TextDarkHeading,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 20.sp
                     )
                 )
             }
 
-            // Right Blue Circle "+" Button (Screen 11 in mockup)
+            // Right Circle "+" Button
             Box(
                 modifier = Modifier
                     .size(34.dp)
                     .clip(CircleShape)
-                    .background(ElectricBlue)
+                    .background(MaterialTheme.colorScheme.primary)
                     .clickable {
                         newFolderName = ""
                         viewModel.openCreateDialog()
@@ -138,21 +136,20 @@ fun FolderScreen(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "New Folder",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }
         }
 
-        HorizontalDivider(color = LightBorderSubtle)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
         when {
             uiState.isLoading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = ElectricBlue)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
-            // Folder Detail View: Viewing scripts inside a selected folder
             uiState.selectedFolderId != null -> {
                 if (uiState.folderScripts.isEmpty()) {
                     EmptyState(
@@ -177,7 +174,6 @@ fun FolderScreen(
                     }
                 }
             }
-            // Folder List View: Screen 11 in mockup
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -204,7 +200,7 @@ fun FolderScreen(
     if (uiState.showCreateDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissCreateDialog() },
-            title = { Text("Create New Folder", fontWeight = FontWeight.Bold) },
+            title = { Text("Create New Folder", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
                     OutlinedTextField(
@@ -218,7 +214,7 @@ fun FolderScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Folder Color", fontSize = 13.sp, color = TextDarkMuted)
+                    Text("Folder Color", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -234,7 +230,7 @@ fun FolderScreen(
                                     .background(color)
                                     .border(
                                         width = if (isSelected) 3.dp else 0.dp,
-                                        color = if (isSelected) TextDarkHeading else Color.Transparent,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                                         shape = CircleShape
                                     )
                                     .clickable { selectedColorHex = hex }
@@ -249,14 +245,16 @@ fun FolderScreen(
                         viewModel.createFolder(newFolderName, selectedColorHex)
                     }
                 ) {
-                    Text("Create", color = ElectricBlue, fontWeight = FontWeight.Bold)
+                    Text("Create", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissCreateDialog() }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
         )
     }
 
@@ -265,7 +263,7 @@ fun FolderScreen(
         var renameText by remember { mutableStateOf(target.name) }
         AlertDialog(
             onDismissRequest = { viewModel.dismissRenameDialog() },
-            title = { Text("Rename Folder", fontWeight = FontWeight.Bold) },
+            title = { Text("Rename Folder", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 OutlinedTextField(
                     value = renameText,
@@ -281,14 +279,16 @@ fun FolderScreen(
                         viewModel.renameFolder(target.id, renameText)
                     }
                 ) {
-                    Text("Rename", color = ElectricBlue, fontWeight = FontWeight.Bold)
+                    Text("Rename", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissRenameDialog() }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
         )
     }
 }
@@ -304,15 +304,15 @@ fun FolderListItem(
     val folderColor = try {
         Color(android.graphics.Color.parseColor(folder.colorHex))
     } catch (_: Exception) {
-        ElectricBlue
+        MaterialTheme.colorScheme.primary
     }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
-            .border(1.dp, LightBorderSubtle, RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
@@ -326,7 +326,6 @@ fun FolderListItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                // Colored Folder Icon Box (matching Screen 11 in mockup)
                 Box(
                     modifier = Modifier
                         .size(42.dp)
@@ -349,7 +348,7 @@ fun FolderListItem(
                         text = folder.name,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = TextDarkHeading,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 16.sp
                         )
                     )
@@ -357,7 +356,7 @@ fun FolderListItem(
                     Text(
                         text = "${folder.scriptCount} script${if (folder.scriptCount != 1) "s" else ""}",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = TextDarkMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 13.sp
                         )
                     )
@@ -374,15 +373,14 @@ fun FolderListItem(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "Options",
-                            tint = TextDarkMuted,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
 
                     DropdownMenu(
                         expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(Color.White)
+                        onDismissRequest = { menuExpanded = false }
                     ) {
                         DropdownMenuItem(
                             text = { Text("Rename") },
@@ -392,7 +390,7 @@ fun FolderListItem(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Delete Folder", color = Color(0xFFEF4444)) },
+                            text = { Text("Delete Folder", color = RecordRed) },
                             onClick = {
                                 menuExpanded = false
                                 onDelete()
@@ -406,7 +404,7 @@ fun FolderListItem(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                     contentDescription = null,
-                    tint = TextDarkMuted,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(13.dp)
                 )
             }

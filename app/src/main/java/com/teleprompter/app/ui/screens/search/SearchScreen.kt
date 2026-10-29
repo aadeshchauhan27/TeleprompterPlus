@@ -2,7 +2,6 @@ package com.teleprompter.app.ui.screens.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -38,16 +35,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.ui.components.EmptyState
 import com.teleprompter.app.ui.components.ScriptCard
 
@@ -65,7 +57,7 @@ fun SearchScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         // Search Input Header
@@ -79,7 +71,7 @@ fun SearchScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -87,15 +79,15 @@ fun SearchScreen(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF1F5F9))
-                    .border(1.dp, LightBorderSubtle, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 10.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = null,
-                        tint = TextDarkMuted,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -104,7 +96,7 @@ fun SearchScreen(
                         if (rawQuery.isEmpty()) {
                             Text(
                                 text = "Search scripts & notes...",
-                                color = TextDarkMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 15.sp
                             )
                         }
@@ -112,11 +104,11 @@ fun SearchScreen(
                             value = rawQuery,
                             onValueChange = { viewModel.onQueryChanged(it) },
                             textStyle = TextStyle(
-                                color = TextDarkHeading,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium
                             ),
-                            cursorBrush = SolidColor(ElectricBlue),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -130,7 +122,7 @@ fun SearchScreen(
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Clear",
-                                tint = TextDarkMuted,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -151,8 +143,10 @@ fun SearchScreen(
                 onClick = { viewModel.onFilterChanged(SearchFilter.ALL) },
                 label = { Text("All Scripts") },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = ElectricBlue,
-                    selectedLabelColor = Color.White
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    labelColor = MaterialTheme.colorScheme.onSurface
                 )
             )
 
@@ -161,8 +155,10 @@ fun SearchScreen(
                 onClick = { viewModel.onFilterChanged(SearchFilter.FAVORITES) },
                 label = { Text("Favorites Only") },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = ElectricBlue,
-                    selectedLabelColor = Color.White
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    labelColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -192,7 +188,7 @@ fun SearchScreen(
                     item {
                         Text(
                             text = "${uiState.results.size} script${if (uiState.results.size > 1) "s" else ""} found",
-                            color = TextDarkMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
                         )
