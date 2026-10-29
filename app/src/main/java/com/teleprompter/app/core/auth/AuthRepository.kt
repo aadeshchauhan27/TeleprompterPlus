@@ -101,26 +101,16 @@ class AuthRepositoryImpl(
     }
 
     override fun getGoogleSignInIntent(context: Context): Intent {
-        val serverClientId = try {
-            this.context.getString(R.string.default_web_client_id)
-        } catch (_: Exception) {
-            ""
-        }
-        val hasRealWebClient = serverClientId.isNotBlank() && serverClientId != "dummy_web_client_id"
-
-        return if (hasRealWebClient) {
-            try {
-                val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestEmail()
-                    .requestProfile()
-                    .requestIdToken(serverClientId)
-                GoogleSignIn.getClient(context, gsoBuilder.build()).signInIntent
-            } catch (_: Exception) {
-                AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), null, null, null, null)
-            }
-        } else {
-            AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), null, null, null, null)
-        }
+        // Native Android Google Account Picker - works reliably without OAuth developer error 10
+        return AccountManager.newChooseAccountIntent(
+            null,
+            null,
+            arrayOf("com.google"),
+            null,
+            null,
+            null,
+            null
+        )
     }
 
     override suspend fun handleSignInResult(intent: Intent?): Result<AuthUser> {
@@ -128,48 +118,7 @@ class AuthRepositoryImpl(
             return Result.failure(Exception("Sign-in was cancelled."))
         }
 
-        // 1. Try GoogleSignIn with OAuth ID token for real Firebase Auth registration
-        try {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
-            val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
-            val email = account.email ?: "creator@gmail.com"
-            val name = account.displayName ?: (account.givenName ?: "Google User")
-            val idToken = account.idToken
-            val photoUrl = account.photoUrl?.toString()
-
-            if (isFirebaseAvailable && !idToken.isNullOrBlank()) {
-                try {
-                    val credential = GoogleAuthProvider.getCredential(idToken, null)
-                    val authResult = FirebaseAuth.getInstance().signInWithCredential(credential).await()
-                    val firebaseUser = authResult.user
-                    if (firebaseUser != null) {
-                        val user = AuthUser(
-                            id = firebaseUser.uid,
-                            email = firebaseUser.email ?: email,
-                            displayName = firebaseUser.displayName ?: name,
-                            photoUrl = firebaseUser.photoUrl?.toString() ?: photoUrl,
-                            isAnonymous = false
-                        )
-                        saveSession(user)
-                        _currentUser.value = user
-                        return Result.success(user)
-                    }
-                } catch (_: Exception) {}
-            }
-
-            val user = AuthUser(
-                id = "google_${email.hashCode()}",
-                email = email,
-                displayName = name,
-                photoUrl = photoUrl,
-                isAnonymous = false
-            )
-            saveSession(user)
-            _currentUser.value = user
-            return Result.success(user)
-        } catch (_: Exception) {}
-
-        // 2. Native Android Account Picker fallback
+        // 1. Native Android Google Account Picker (AccountManager)
         val accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
         if (!accountName.isNullOrBlank()) {
             val email = accountName.trim()
@@ -184,8 +133,24 @@ class AuthRepositoryImpl(
                 }
                 .ifBlank { "Creator" }
 
+            var firebaseUid: String? = null
+            if (isFirebaseAvailable) {
+                try {
+                    val auth = FirebaseAuth.getInstance()
+                    val currentFbUser = auth.currentUser
+                    if (currentFbUser != null) {
+                        firebaseUid = currentFbUser.uid
+                    } else {
+                        val authResult = auth.signInAnonymously().await()
+                        firebaseUid = authResult.user?.uid
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("AuthRepository", "Firebase auth link: ${e.message}")
+                }
+            }
+
             val user = AuthUser(
-                id = "google_${email.hashCode()}",
+                id = firebaseUid ?: "google_${email.hashCode()}",
                 email = email,
                 displayName = cleanName,
                 photoUrl = null,
@@ -195,6 +160,36 @@ class AuthRepositoryImpl(
             _currentUser.value = user
             return Result.success(user)
         }
+
+        // 2. Try GoogleSignIn with OAuth ID token for real Firebase Auth registration
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
+            val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+            val email = account.email ?: "creator@gmail.com"
+            val name = account.displayName ?: (account.givenName ?: "Google User")
+            val idToken = account.idToken
+            val photoUrl = account.photoUrl?.toString()
+
+            var firebaseUid: String? = null
+            if (isFirebaseAvailable && !idToken.isNullOrBlank()) {
+                try {
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    val authResult = FirebaseAuth.getInstance().signInWithCredential(credential).await()
+                    firebaseUid = authResult.user?.uid
+                } catch (_: Exception) {}
+            }
+
+            val user = AuthUser(
+                id = firebaseUid ?: "google_${email.hashCode()}",
+                email = email,
+                displayName = name,
+                photoUrl = photoUrl,
+                isAnonymous = false
+            )
+            saveSession(user)
+            _currentUser.value = user
+            return Result.success(user)
+        } catch (_: Exception) {}
 
         return Result.failure(Exception("Sign-in cancelled or failed."))
     }

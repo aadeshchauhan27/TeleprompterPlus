@@ -24,26 +24,29 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Videocam
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -60,20 +63,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.CyanGradient
-import com.teleprompter.app.core.theme.DeepNavyCard
-import com.teleprompter.app.core.theme.DeepNavyDark
-import com.teleprompter.app.core.theme.DeepNavySurface
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.ElectricBlueLight
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.LightSurface
-import com.teleprompter.app.core.theme.PurpleGradient
-import com.teleprompter.app.core.theme.TextDarkBody
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.core.util.ScriptUtils
-import com.teleprompter.app.ui.components.TeleprompterBrandTitle
 
 @Composable
 fun ScriptDetailScreen(
@@ -83,6 +73,7 @@ fun ScriptDetailScreen(
     onStartTeleprompter: (String) -> Unit,
     onStartRecording: (String) -> Unit = {},
     onNavigateToRecordings: () -> Unit = {},
+    onNavigateToSettings: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -91,20 +82,20 @@ fun ScriptDetailScreen(
 
     if (uiState.isLoading) {
         Box(
-            modifier = modifier.fillMaxSize().background(LightSurface),
+            modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(color = ElectricBlue)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         return
     }
 
     if (script == null) {
         Box(
-            modifier = modifier.fillMaxSize().background(LightSurface),
+            modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            Text("Script not found", color = TextDarkMuted)
+            Text("Script not found", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         return
     }
@@ -112,40 +103,81 @@ fun ScriptDetailScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(LightSurface)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
-        // Top Navigation Bar
+        // Top App Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = onNavigateBack) {
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading,
-                    modifier = Modifier.size(24.dp)
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
-            IconButton(onClick = { /* Bookmark / Tag action */ }) {
-                Icon(
-                    imageVector = Icons.Outlined.BookmarkBorder,
-                    contentDescription = "Tag",
-                    tint = TextDarkMuted,
-                    modifier = Modifier.size(22.dp)
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // One-tap Favorite Star
+                IconButton(
+                    onClick = { viewModel.toggleFavorite() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                ) {
+                    Icon(
+                        imageVector = if (script.isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
+                        contentDescription = "Favorite",
+                        tint = if (script.isFavorite) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                // Share Action
+                IconButton(
+                    onClick = {
+                        val sendIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, viewModel.getExportText())
+                            type = "text/plain"
+                        }
+                        context.startActivity(Intent.createChooser(sendIntent, "Share Script"))
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = "Share",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // Title and Metadata Header
+        // Hero Title & Metadata
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -155,239 +187,297 @@ fun ScriptDetailScreen(
                 text = script.title.ifBlank { "Untitled Script" },
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
-                    fontSize = 28.sp
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 26.sp
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            val metaText = ScriptUtils.formatScriptMeta(script.wordCount, script.estimatedReadingTime)
-            Text(
-                text = "$metaText • ${script.wordCount} words",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = TextDarkMuted,
-                    fontSize = 15.sp
+            // Metadata Badges
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DetailMetadataBadge(
+                    icon = Icons.Outlined.Description,
+                    label = "${script.wordCount} words"
                 )
-            )
+                DetailMetadataBadge(
+                    icon = Icons.Outlined.Timer,
+                    label = ScriptUtils.formatReadingTime(script.estimatedReadingTime)
+                )
+                if (!uiState.folderName.isNullOrBlank()) {
+                    DetailMetadataBadge(
+                        icon = Icons.Outlined.Folder,
+                        label = uiState.folderName!!
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Premium Quick Action Buttons
+        // Primary Action Buttons (High Contrast Monochrome)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Big Primary CTA: Start Teleprompter
+            Button(
+                onClick = { onStartTeleprompter(script.id) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "Start Teleprompter",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Secondary CTA: Record Video
+            OutlinedButton(
+                onClick = { onStartRecording(script.id) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                border = ButtonDefaults.outlinedButtonBorder(true).copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outline)
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Videocam,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "Record Video",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Quick Actions Grid (Clean Monochrome Squircles)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            QuickActionButton(
-                icon = Icons.Default.Edit,
+            MonochromeActionButton(
+                icon = Icons.Outlined.Edit,
                 label = "Edit",
-                onClick = { onNavigateToEditor(script.id) },
-                gradient = listOf(ElectricBlue, CyanGradient)
+                onClick = { onNavigateToEditor(script.id) }
             )
 
-            QuickActionButton(
-                icon = Icons.Default.Share,
-                label = "Share",
+            MonochromeActionButton(
+                icon = Icons.Outlined.ContentCopy,
+                label = "Duplicate",
+                onClick = {
+                    viewModel.duplicateScript {
+                        Toast.makeText(context, "Script duplicated", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+
+            MonochromeActionButton(
+                icon = Icons.Outlined.Tune,
+                label = "Settings",
+                onClick = { onNavigateToSettings(script.id) }
+            )
+
+            MonochromeActionButton(
+                icon = Icons.Outlined.FileDownload,
+                label = "Export",
                 onClick = {
                     val sendIntent = Intent().apply {
                         action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_SUBJECT, script.title)
                         putExtra(Intent.EXTRA_TEXT, viewModel.getExportText())
                         type = "text/plain"
                     }
-                    context.startActivity(Intent.createChooser(sendIntent, "Share Script"))
-                },
-                gradient = listOf(CyanGradient, PurpleGradient)
-            )
-
-            QuickActionButton(
-                icon = Icons.Default.Timer,
-                label = "Timer",
-                onClick = {
-                    Toast.makeText(context, "Reading time: ${ScriptUtils.formatReadingTime(script.estimatedReadingTime)}", Toast.LENGTH_SHORT).show()
-                },
-                gradient = listOf(PurpleGradient, ElectricBlue)
-            )
-
-            QuickActionButton(
-                icon = Icons.Default.MoreHoriz,
-                label = "More",
-                onClick = { viewModel.openFolderDialog() },
-                gradient = listOf(ElectricBlueLight, ElectricBlue)
+                    context.startActivity(Intent.createChooser(sendIntent, "Export Script"))
+                }
             )
         }
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Premium Primary Action Buttons
-        PremiumActionListItem(
-            icon = Icons.Default.PlayArrow,
-            iconTint = ElectricBlue,
-            iconBg = ElectricBlueLight,
-            title = "Start Teleprompter",
-            onClick = { onStartTeleprompter(script.id) }
-        )
-
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
-
-        PremiumActionListItem(
-            icon = Icons.Default.Videocam,
-            iconTint = TextDarkHeading,
-            iconBg = Color(0xFFF0F0F2),
-            title = "Start Recording",
-            onClick = {
-                onStartRecording(script.id)
-            }
-        )
-
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
-
-        PremiumActionListItem(
-            icon = Icons.Default.VideoLibrary,
-            iconTint = ElectricBlue,
-            iconBg = ElectricBlueLight,
-            title = "View Recordings",
-            onClick = {
-                onNavigateToRecordings()
-            }
-        )
-
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
-
-        PremiumActionListItem(
-            icon = Icons.Default.ContentCopy,
-            iconTint = TextDarkHeading,
-            iconBg = Color(0xFFF0F0F2),
-            title = "Duplicate Script",
-            onClick = {
-                viewModel.duplicateScript {
-                    Toast.makeText(context, "Script duplicated", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Add to Favorites Switch Item
-        Row(
+        // Script Preview Card
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { viewModel.toggleFavorite() }
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                .padding(18.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (script.isFavorite) ElectricBlueLight else Color(0xFFF0F0F2))
-                        .padding(10.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = if (script.isFavorite) PurpleGradient else TextDarkMuted,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "Add to Favorites",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = TextDarkHeading
-                    )
+            Text(
+                text = "SCRIPT PREVIEW",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 1.sp
                 )
-            }
-
-            Switch(
-                checked = script.isFavorite,
-                onCheckedChange = { viewModel.toggleFavorite() },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = ElectricBlue,
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color(0xFFD1D5DB)
-                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = script.content.ifBlank { "No content. Tap 'Edit' to start writing." },
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 22.sp,
+                    fontSize = 14.sp
+                ),
+                maxLines = 6
             )
         }
 
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        PremiumActionListItem(
-            icon = Icons.Default.Folder,
-            iconTint = TextDarkHeading,
-            iconBg = Color(0xFFF0F0F2),
-            title = "Move to Folder",
-            trailingText = uiState.folderName ?: "None",
-            hasChevron = true,
-            onClick = { viewModel.openFolderDialog() }
-        )
+        // Actions List
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+        ) {
+            // Move to Folder
+            CleanActionRow(
+                icon = Icons.Outlined.Folder,
+                title = "Folder",
+                trailingText = uiState.folderName ?: "Uncategorized",
+                hasChevron = true,
+                onClick = { viewModel.openFolderDialog() }
+            )
 
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
 
-        PremiumActionListItem(
-            icon = Icons.Default.Description,
-            iconTint = TextDarkHeading,
-            iconBg = Color(0xFFF0F0F2),
-            title = "Export as Text",
-            hasChevron = true,
-            onClick = {
-                val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_SUBJECT, script.title)
-                    putExtra(Intent.EXTRA_TEXT, viewModel.getExportText())
-                    type = "text/plain"
+            // Past Recordings
+            CleanActionRow(
+                icon = Icons.Outlined.VideoLibrary,
+                title = "View Recordings",
+                hasChevron = true,
+                onClick = onNavigateToRecordings
+            )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+
+            // Favorites Toggle Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.toggleFavorite() }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (script.isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
+                            contentDescription = null,
+                            tint = if (script.isFavorite) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Text(
+                        text = "Favorite Script",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 15.sp
+                        )
+                    )
                 }
-                context.startActivity(Intent.createChooser(sendIntent, "Export as Text"))
+
+                Switch(
+                    checked = script.isFavorite,
+                    onCheckedChange = { viewModel.toggleFavorite() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
             }
-        )
 
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
 
-        PremiumActionListItem(
-            icon = Icons.Default.Share,
-            iconTint = TextDarkHeading,
-            iconBg = Color(0xFFF0F0F2),
-            title = "Share Script",
-            onClick = {
-                val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, viewModel.getExportText())
-                    type = "text/plain"
-                }
-                context.startActivity(Intent.createChooser(sendIntent, "Share Script"))
-            }
-        )
+            // Delete Script
+            CleanActionRow(
+                icon = Icons.Outlined.DeleteOutline,
+                title = "Delete Script",
+                titleColor = Color(0xFFEF4444),
+                iconTint = Color(0xFFEF4444),
+                onClick = { viewModel.openDeleteDialog() }
+            )
+        }
 
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = Color(0xFFE5E5E7))
-
-        PremiumActionListItem(
-            icon = Icons.Default.Delete,
-            iconTint = Color(0xFFEF4444),
-            iconBg = Color(0xFFFEF2F2),
-            title = "Delete Script",
-            titleColor = Color(0xFFEF4444),
-            onClick = { viewModel.openDeleteDialog() }
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(36.dp))
     }
 
     // Move to Folder Dialog
     if (uiState.showFolderDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissFolderDialog() },
-            title = { Text("Move to Folder", fontWeight = FontWeight.Bold, color = ElectricBlue) },
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Text(
+                    text = "Move to Folder",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
             text = {
                 Column {
                     Text(
                         text = "Select a folder for this script:",
-                        color = TextDarkMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -401,8 +491,8 @@ fun ScriptDetailScreen(
                     ) {
                         Text(
                             text = "No Folder (Uncategorized)",
-                            fontWeight = if (script.folderId == null) FontWeight.SemiBold else FontWeight.Normal,
-                            color = if (script.folderId == null) ElectricBlue else TextDarkHeading
+                            fontWeight = if (script.folderId == null) FontWeight.Bold else FontWeight.Normal,
+                            color = if (script.folderId == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     }
 
@@ -416,14 +506,14 @@ fun ScriptDetailScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(12.dp)
-                                    .background(Color(android.graphics.Color.parseColor(folder.colorHex)), CircleShape)
+                                    .size(10.dp)
+                                    .background(MaterialTheme.colorScheme.primary, CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = folder.name,
-                                fontWeight = if (script.folderId == folder.id) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (script.folderId == folder.id) ElectricBlue else TextDarkHeading
+                                fontWeight = if (script.folderId == folder.id) FontWeight.Bold else FontWeight.Normal,
+                                color = if (script.folderId == folder.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -431,7 +521,7 @@ fun ScriptDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = { viewModel.dismissFolderDialog() }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -441,8 +531,9 @@ fun ScriptDetailScreen(
     if (uiState.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissDeleteDialog() },
+            containerColor = MaterialTheme.colorScheme.surface,
             title = { Text("Delete Script", fontWeight = FontWeight.Bold, color = Color(0xFFEF4444)) },
-            text = { Text("Are you sure you want to delete '${script.title}'? This action cannot be undone.") },
+            text = { Text("Are you sure you want to delete '${script.title}'? This action cannot be undone.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -452,12 +543,12 @@ fun ScriptDetailScreen(
                         }
                     }
                 ) {
-                    Text("Delete", color = Color(0xFFEF4444), fontWeight = FontWeight.SemiBold)
+                    Text("Delete", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissDeleteDialog() }) {
-                    Text("Cancel", color = TextDarkMuted)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -465,47 +556,90 @@ fun ScriptDetailScreen(
 }
 
 @Composable
-private fun QuickActionButton(
+private fun DetailMetadataBadge(
     icon: ImageVector,
-    label: String,
-    onClick: () -> Unit,
-    gradient: List<Color>
+    label: String
 ) {
-    Box(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
-            .size(80.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(brush = androidx.compose.ui.graphics.Brush.linearGradient(gradient))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(14.dp)
+        )
+        Text(
+            text = label,
+            fontSize = 12.5.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 @Composable
-private fun PremiumActionListItem(
+private fun MonochromeActionButton(
     icon: ImageVector,
-    iconTint: Color,
-    iconBg: Color,
+    label: String,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(72.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun CleanActionRow(
+    icon: ImageVector,
     title: String,
-    titleColor: Color = TextDarkHeading,
+    titleColor: Color = Color.Unspecified,
+    iconTint: Color = Color.Unspecified,
     trailingText: String? = null,
     hasChevron: Boolean = false,
     onClick: () -> Unit
 ) {
+    val effectiveTitleColor = if (titleColor != Color.Unspecified) titleColor else MaterialTheme.colorScheme.onSurface
+    val effectiveIconTint = if (iconTint != Color.Unspecified) iconTint else MaterialTheme.colorScheme.onSurface
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -515,24 +649,24 @@ private fun PremiumActionListItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(iconBg)
-                    .padding(12.dp)
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(20.dp)
+                    tint = effectiveIconTint,
+                    modifier = Modifier.size(19.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Medium,
-                    color = titleColor,
+                    color = effectiveTitleColor,
                     fontSize = 15.sp
                 )
             )
@@ -543,18 +677,18 @@ private fun PremiumActionListItem(
                 Text(
                     text = trailingText,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = TextDarkMuted,
-                        fontSize = 13.sp
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.5.sp
                     ),
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = 6.dp)
                 )
             }
             if (hasChevron) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                     contentDescription = null,
-                    tint = TextDarkMuted,
-                    modifier = Modifier.size(14.dp)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(13.dp)
                 )
             }
         }

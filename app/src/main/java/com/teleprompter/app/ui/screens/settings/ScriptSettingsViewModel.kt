@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teleprompter.app.core.camera.CameraLens
+import com.teleprompter.app.core.model.AppThemeMode
 import com.teleprompter.app.core.model.FontStyleType
 import com.teleprompter.app.core.model.PresetThemes
 import com.teleprompter.app.core.model.PresetType
@@ -277,6 +278,12 @@ class ScriptSettingsViewModel(
         val current = uiState.value.settings.copy(keepScreenAwake = keepAwake)
         _localSettings.value = current
         viewModelScope.launch { settingsRepository.updateKeepScreenAwake(keepAwake) }
+    }
+
+    fun setAppThemeMode(themeMode: AppThemeMode) {
+        val current = uiState.value.settings.copy(appThemeMode = themeMode)
+        _localSettings.value = current
+        viewModelScope.launch { settingsRepository.updateAppThemeMode(themeMode) }
     }
 
     fun setTheme(themeId: String) {

@@ -27,25 +27,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentPaste
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,17 +56,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.CyanGradient
-import com.teleprompter.app.core.theme.DeepNavyDark
-import com.teleprompter.app.core.theme.DeepNavySurface
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.ElectricBlueLight
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.LightSurface
-import com.teleprompter.app.core.theme.PinkGradient
-import com.teleprompter.app.core.theme.PurpleGradient
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.ui.components.EmptyState
 import com.teleprompter.app.ui.components.ScriptCard
 import com.teleprompter.app.ui.components.TeleprompterBrandTitle
@@ -93,8 +79,24 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier
             .fillMaxSize()
-            .background(LightSurface)
             .statusBarsPadding(),
+        containerColor = MaterialTheme.colorScheme.background,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateToCreateScript,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp, pressedElevation = 10.dp),
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "New Script",
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        },
         bottomBar = {
             HomeBottomNavigationBar(
                 currentRoute = "home",
@@ -110,9 +112,9 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFF8FAFC))
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            // Header: Centered App Title with premium styling
+            // Header: Minimalist Top Bar with Search (Free app - Pro icon removed!)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,100 +124,40 @@ fun HomeScreen(
             ) {
                 TeleprompterBrandTitle(fontSize = 24.sp, isDarkBackground = false, showPlusBadge = true)
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                // Search Icon Action Button
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        .clickable(onClick = onNavigateToSearch),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Pro Badge - modern gradient pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFFF59E0B), Color(0xFFEC4899))
-                                )
-                            )
-                            .clickable(onClick = onNavigateToPro)
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("👑", fontSize = 13.sp)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("PRO", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        }
-                    }
-
-                    // Search Button - modern circle design
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFE2E8F0), CircleShape)
-                            .clickable(onClick = onNavigateToSearch),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = Color(0xFF64748B),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
-            // Action Buttons: Modern gradient design
-            Column(
+            // Quick Paste Action Bar
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Primary Gradient Button
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(ElectricBlue, Color(0xFF2563EB))
-                            )
-                        )
-                        .clickable(onClick = onNavigateToCreateScript),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Text(
-                            text = "New Script",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Secondary Outline Button
                 OutlinedButton(
                     onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = clipboard.primaryClip
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                        val clip = clipboard?.primaryClip
                         if (clip != null && clip.itemCount > 0) {
-                            val text = clip.getItemAt(0).text?.toString().orEmpty()
-                            if (text.isNotBlank()) {
-                                viewModel.pasteFromClipboard(text) { newId ->
+                            val pastedText = clip.getItemAt(0).text?.toString() ?: ""
+                            if (pastedText.isNotBlank()) {
+                                viewModel.pasteFromClipboard(pastedText) { newId ->
                                     Toast.makeText(context, "Script created from clipboard", Toast.LENGTH_SHORT).show()
                                     onNavigateToScriptDetail(newId)
                                 }
@@ -228,11 +170,11 @@ fun HomeScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White),
+                        .height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = ButtonDefaults.outlinedButtonBorder(true).copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE2E8F0))
+                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outline)
                     )
                 ) {
                     Row(
@@ -242,34 +184,34 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.ContentPaste,
                             contentDescription = null,
-                            tint = TextDarkHeading,
-                            modifier = Modifier.size(20.dp)
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(19.dp)
                         )
                         Text(
-                            text = "Paste from Clipboard",
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp,
-                            color = TextDarkHeading
+                            text = "Paste Script from Clipboard",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Filter Tabs - Premium modern look
+            // Filter Tabs - Clean Monochrome Segmented Tabs
             TabRow(
                 selectedTabIndex = uiState.selectedTab,
                 containerColor = Color.Transparent,
-                contentColor = ElectricBlue,
+                contentColor = MaterialTheme.colorScheme.primary,
                 indicator = { tabPositions ->
                     Box(
                         modifier = Modifier
                             .tabIndicatorOffset(tabPositions[uiState.selectedTab])
                             .height(3.dp)
-                            .padding(horizontal = 20.dp)
+                            .padding(horizontal = 24.dp)
                             .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                            .background(ElectricBlue)
+                            .background(MaterialTheme.colorScheme.primary)
                     )
                 },
                 divider = {
@@ -277,7 +219,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(Color(0xFFE2E8F0))
+                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.6f))
                     )
                 },
                 modifier = Modifier.padding(horizontal = 20.dp)
@@ -290,16 +232,16 @@ fun HomeScreen(
                         text = {
                             Text(
                                 text = title,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                                fontSize = 15.sp,
-                                color = if (isSelected) ElectricBlue else TextDarkMuted
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 14.5.sp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Script List / Loading / Empty State
             when {
@@ -309,7 +251,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            color = ElectricBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 3.dp,
                             modifier = Modifier.size(32.dp)
                         )
@@ -319,7 +261,7 @@ fun HomeScreen(
                     val emptyMessage = when (uiState.selectedTab) {
                         1 -> Pair("No Recent Scripts", "Scripts you view or edit recently will appear here.")
                         2 -> Pair("No Favorites Yet", "Tap the star icon on any script to quickly access it from favorites.")
-                        else -> Pair("No Scripts Created", "Start by writing your first video script or pasting from clipboard.")
+                        else -> Pair("No Scripts Created", "Tap the + button below or paste from clipboard to create your first script.")
                     }
                     EmptyState(
                         title = emptyMessage.first,
@@ -332,7 +274,7 @@ fun HomeScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         items(
                             items = uiState.displayedScripts,
@@ -373,10 +315,10 @@ fun HomeBottomNavigationBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(LightSurface)
-            .border(width = 0.5.dp, color = Color(0xFFE5E5E7))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.outline)
             .navigationBarsPadding()
-            .padding(vertical = 12.dp, horizontal = 12.dp)
+            .padding(vertical = 10.dp, horizontal = 12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -433,8 +375,8 @@ private fun BottomNavItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val color = if (isSelected) ElectricBlue else TextDarkMuted
-    val iconTint = if (isSelected) ElectricBlue else TextDarkMuted
+    val color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val iconTint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -448,11 +390,11 @@ private fun BottomNavItem(
             tint = iconTint,
             modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
             fontSize = 11.sp,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = color
         )
     }

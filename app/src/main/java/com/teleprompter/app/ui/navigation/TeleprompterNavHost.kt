@@ -152,6 +152,9 @@ fun TeleprompterNavHost(
                 },
                 onNavigateToRecordings = {
                     navController.navigate(Screen.Recordings.route)
+                },
+                onNavigateToSettings = { scriptId ->
+                    navController.navigate(Screen.ScriptSettings.createRoute(scriptId))
                 }
             )
         }

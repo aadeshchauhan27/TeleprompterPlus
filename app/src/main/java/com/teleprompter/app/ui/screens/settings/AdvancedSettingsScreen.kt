@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Cameraswitch
 import androidx.compose.material.icons.outlined.CropFree
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.Flip
 import androidx.compose.material.icons.outlined.Mic
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teleprompter.app.core.camera.CameraLens
+import com.teleprompter.app.core.model.AppThemeMode
 import com.teleprompter.app.core.model.PresetType
 import com.teleprompter.app.core.model.VideoQualityPreference
 import com.teleprompter.app.core.theme.ElectricBlue
@@ -84,12 +86,13 @@ fun AdvancedSettingsScreen(
     var showQualityDialog by remember { mutableStateOf(false) }
     var showPresetDialog by remember { mutableStateOf(false) }
     var showCountdownDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
     var showResetConfirmation by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -104,20 +107,20 @@ fun AdvancedSettingsScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextDarkHeading
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             Text(
                 text = "Advanced Settings",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp
                 )
             )
         }
 
-        HorizontalDivider(color = LightBorderSubtle)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
 
         Column(
             modifier = Modifier
@@ -228,6 +231,15 @@ fun AdvancedSettingsScreen(
                 onClick = { showCountdownDialog = true }
             )
 
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = LightBorderSubtle)
+
+            SettingsValueRow(
+                icon = Icons.Outlined.DarkMode,
+                title = "Appearance / Dark Mode",
+                value = settings.appThemeMode.label,
+                onClick = { showThemeDialog = true }
+            )
+
             Spacer(modifier = Modifier.height(28.dp))
 
             // SECTION 4: RESET TELEPROMPTER SETTINGS
@@ -295,7 +307,7 @@ fun AdvancedSettingsScreen(
                 }
             },
             confirmButton = { TextButton(onClick = { showCameraDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -339,7 +351,7 @@ fun AdvancedSettingsScreen(
                 }
             },
             confirmButton = { TextButton(onClick = { showQualityDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -379,7 +391,7 @@ fun AdvancedSettingsScreen(
                 }
             },
             confirmButton = { TextButton(onClick = { showPresetDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -413,7 +425,45 @@ fun AdvancedSettingsScreen(
                 }
             },
             confirmButton = { TextButton(onClick = { showCountdownDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // Dialog: Appearance / Dark Mode
+    if (showThemeDialog) {
+        AlertDialog(
+            onDismissRequest = { showThemeDialog = false },
+            title = { Text("Appearance / Dark Mode", fontWeight = FontWeight.Bold, color = TextDarkHeading) },
+            text = {
+                Column {
+                    listOf(
+                        Pair(AppThemeMode.SYSTEM, "System Default (Follow OS)"),
+                        Pair(AppThemeMode.LIGHT, "Light Mode (Minimalist Black & White)"),
+                        Pair(AppThemeMode.DARK, "Dark Mode (Obsidian Black)")
+                    ).forEach { (mode, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setAppThemeMode(mode)
+                                    showThemeDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 15.sp,
+                                fontWeight = if (settings.appThemeMode == mode) FontWeight.Bold else FontWeight.Normal,
+                                color = if (settings.appThemeMode == mode) ElectricBlue else TextDarkHeading
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showThemeDialog = false }) { Text("Cancel", color = TextDarkMuted) } },
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -447,7 +497,7 @@ fun AdvancedSettingsScreen(
                     Text("Cancel", color = TextDarkMuted)
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -459,7 +509,7 @@ private fun SectionTitle(title: String) {
         text = title.uppercase(),
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.Bold,
-            color = ElectricBlue,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 12.sp,
             letterSpacing = 1.sp
         ),
@@ -491,13 +541,13 @@ private fun SettingsToggleRow(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF1F5F9)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = TextDarkHeading,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -509,7 +559,7 @@ private fun SettingsToggleRow(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Medium,
-                        color = TextDarkHeading,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 15.sp
                     )
                 )
@@ -517,7 +567,7 @@ private fun SettingsToggleRow(
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = TextDarkMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                 )
@@ -530,8 +580,8 @@ private fun SettingsToggleRow(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = ElectricBlue
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary
             )
         )
     }
@@ -557,13 +607,13 @@ private fun SettingsValueRow(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF1F5F9)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = TextDarkHeading,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -574,7 +624,7 @@ private fun SettingsValueRow(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Medium,
-                    color = TextDarkHeading,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 15.sp
                 )
             )
@@ -584,7 +634,7 @@ private fun SettingsValueRow(
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             )
@@ -592,7 +642,7 @@ private fun SettingsValueRow(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = TextDarkMuted,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }

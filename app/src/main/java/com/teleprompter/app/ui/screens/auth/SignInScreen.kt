@@ -1,10 +1,9 @@
 package com.teleprompter.app.ui.screens.auth
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,16 +51,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.teleprompter.app.core.theme.CyanGradient
-import com.teleprompter.app.core.theme.DeepNavyDark
-import com.teleprompter.app.core.theme.DeepNavySurface
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.ElectricBlueLight
-import com.teleprompter.app.core.theme.LightBorderSubtle
-import com.teleprompter.app.core.theme.PinkGradient
-import com.teleprompter.app.core.theme.PurpleGradient
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.ui.AppViewModelProvider
 import com.teleprompter.app.ui.components.TeleprompterBrandTitle
 import com.teleprompter.app.ui.components.TeleprompterLogoBadge
@@ -80,22 +69,24 @@ fun SignInScreen(
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        viewModel.handleSignInResult(
-            intent = result.data,
-            onSuccess = {
-                Toast.makeText(context, "Signed in successfully", Toast.LENGTH_SHORT).show()
-                onSignInSuccess()
-            },
-            onError = { errMsg ->
-                Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
-            }
-        )
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            viewModel.handleSignInResult(
+                intent = result.data,
+                onSuccess = {
+                    Toast.makeText(context, "Signed in successfully", Toast.LENGTH_SHORT).show()
+                    onSignInSuccess()
+                },
+                onError = { errMsg ->
+                    Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 24.dp),
@@ -123,7 +114,7 @@ fun SignInScreen(
             Text(
                 text = "Sign in to sync your scripts & settings\nsecurely to your private cloud",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 ),
@@ -153,7 +144,7 @@ fun SignInScreen(
 
             AuthSocialButton(
                 icon = {
-                    Text("", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = TextDarkHeading)
+                    Text("", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 },
                 text = "Continue with Apple",
                 onClick = {
@@ -176,7 +167,7 @@ fun SignInScreen(
                     Icon(
                         imageVector = Icons.Default.Email,
                         contentDescription = null,
-                        tint = TextDarkHeading,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(21.dp)
                     )
                 },
@@ -197,7 +188,7 @@ fun SignInScreen(
             ) {
                 Text(
                     text = "Continue as Guest",
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -208,18 +199,19 @@ fun SignInScreen(
         if (showEmailDialog) {
             AlertDialog(
                 onDismissRequest = { showEmailDialog = false },
+                containerColor = MaterialTheme.colorScheme.surface,
                 title = {
                     Text(
                         text = "Sign in with Email",
                         fontWeight = FontWeight.Bold,
-                        color = TextDarkHeading
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 text = {
                     Column {
                         Text(
                             text = "Enter your email to sync your scripts to the cloud:",
-                            color = TextDarkMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -246,14 +238,17 @@ fun SignInScreen(
                                 }
                             )
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
-                        Text("Sign In", color = Color.White)
+                        Text("Sign In")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showEmailDialog = false }) {
-                        Text("Cancel", color = TextDarkMuted)
+                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             )
@@ -266,11 +261,11 @@ fun SignInScreen(
         ) {
             val termsText = buildAnnotatedString {
                 append("By continuing you agree to our ")
-                withStyle(SpanStyle(color = ElectricBlue, fontWeight = FontWeight.SemiBold)) {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)) {
                     append("Terms of Service")
                 }
                 append(" and ")
-                withStyle(SpanStyle(color = ElectricBlue, fontWeight = FontWeight.SemiBold)) {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)) {
                     append("Privacy Policy")
                 }
             }
@@ -278,7 +273,7 @@ fun SignInScreen(
                 text = termsText,
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 12.sp,
-                    color = TextDarkMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             )
@@ -298,10 +293,10 @@ private fun AuthSocialButton(
         modifier = modifier.height(52.dp),
         shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         border = ButtonDefaults.outlinedButtonBorder(true).copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE2E8F0))
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outline)
         )
     ) {
         Row(
@@ -315,7 +310,7 @@ private fun AuthSocialButton(
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = text,
-                color = TextDarkHeading,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp
             )

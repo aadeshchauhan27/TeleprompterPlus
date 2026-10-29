@@ -220,20 +220,22 @@ fun CloudSyncProfileScreen(
                             )
                         }
                     } else {
-                        // Upgrade to Pro Button
+                        // Manual Sync Button
                         Button(
-                            onClick = onNavigateToPro,
+                            onClick = { viewModel.syncNow() },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
                         ) {
                             Text(
-                                text = "Upgrade to Pro",
+                                text = "Sync Cloud Data Now",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color.White
+                                fontSize = 15.sp
                             )
                         }
                     }

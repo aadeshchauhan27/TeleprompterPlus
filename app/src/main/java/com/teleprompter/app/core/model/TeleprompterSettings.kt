@@ -27,6 +27,12 @@ enum class VideoQualityPreference(val label: String, val description: String) {
     ULTRA("Ultra (4K)", "Maximum resolution on supported sensors")
 }
 
+enum class AppThemeMode(val label: String) {
+    SYSTEM("System Default"),
+    LIGHT("Light"),
+    DARK("Dark")
+}
+
 data class TeleprompterSettings(
     val scrollSpeed: Int = 50,
     val fontSize: Int = 28,
@@ -51,7 +57,8 @@ data class TeleprompterSettings(
     val recordAudio: Boolean = true,
     val defaultFlashOn: Boolean = false,
     // General Preferences
-    val keepScreenAwake: Boolean = true
+    val keepScreenAwake: Boolean = true,
+    val appThemeMode: AppThemeMode = AppThemeMode.SYSTEM
 ) {
     fun applyPreset(preset: PresetType): TeleprompterSettings {
         return when (preset) {

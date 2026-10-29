@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -29,9 +29,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.CyanGradient
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.PurpleGradient
 
 @Composable
 fun TeleprompterLogoBadge(
@@ -42,24 +39,10 @@ fun TeleprompterLogoBadge(
         modifier = modifier
             .size(size)
             .clip(RoundedCornerShape(size * 0.28f))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF0F172A),
-                        Color(0xFF1E293B),
-                        Color(0xFF0A0F1D)
-                    )
-                )
-            )
+            .background(Color(0xFF0F172A))
             .border(
-                width = 1.5.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        ElectricBlue.copy(alpha = 0.8f),
-                        CyanGradient.copy(alpha = 0.4f),
-                        PurpleGradient.copy(alpha = 0.6f)
-                    )
-                ),
+                width = 1.dp,
+                color = Color(0xFF334155),
                 shape = RoundedCornerShape(size * 0.28f)
             ),
         contentAlignment = Alignment.Center
@@ -84,10 +67,10 @@ fun TeleprompterLogoBadge(
             }
             drawPath(
                 path = glassPath,
-                color = Color(0xFF1E293B).copy(alpha = 0.85f)
+                color = Color(0xFF1E293B)
             )
 
-            // 3 Horizontal glowing script lines
+            // 3 Horizontal script lines
             val strokeW = w * 0.075f
             val lineLeft = w * 0.16f
             val lineRight = w * 0.50f
@@ -100,14 +83,14 @@ fun TeleprompterLogoBadge(
                 cap = StrokeCap.Round
             )
             drawLine(
-                color = Color(0xFF38BDF8),
+                color = Color(0xFFE2E8F0),
                 start = Offset(lineLeft, h * 0.42f),
                 end = Offset(lineRight * 0.92f, h * 0.42f),
                 strokeWidth = strokeW,
                 cap = StrokeCap.Round
             )
             drawLine(
-                color = Color.White.copy(alpha = 0.8f),
+                color = Color(0xFF94A3B8),
                 start = Offset(lineLeft, h * 0.60f),
                 end = Offset(lineRight * 0.72f, h * 0.60f),
                 strokeWidth = strokeW,
@@ -123,7 +106,7 @@ fun TeleprompterLogoBadge(
             }
             drawPath(
                 path = playPath,
-                color = ElectricBlue
+                color = Color.White
             )
         }
 
@@ -133,17 +116,13 @@ fun TeleprompterLogoBadge(
                 .align(Alignment.TopEnd)
                 .size(size * 0.34f)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(ElectricBlue, CyanGradient)
-                    )
-                )
+                .background(Color.White)
                 .border(1.5.dp, Color(0xFF0F172A), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "+",
-                color = Color.White,
+                color = Color(0xFF0F172A),
                 fontSize = (size.value * 0.22f).sp,
                 fontWeight = FontWeight.Black
             )
@@ -154,12 +133,10 @@ fun TeleprompterLogoBadge(
 @Composable
 fun TeleprompterBrandTitle(
     fontSize: TextUnit = 26.sp,
-    isDarkBackground: Boolean = true,
+    isDarkBackground: Boolean = false,
     showPlusBadge: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val primaryText = if (isDarkBackground) Color.White else Color(0xFF0F172A)
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -168,7 +145,7 @@ fun TeleprompterBrandTitle(
             text = buildAnnotatedString {
                 withStyle(
                     SpanStyle(
-                        color = primaryText,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold
                     )
                 ) {
@@ -184,31 +161,18 @@ fun TeleprompterBrandTitle(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(ElectricBlue, Color(0xFF38BDF8))
-                        )
-                    )
+                    .background(MaterialTheme.colorScheme.primary)
                     .padding(horizontal = 7.dp, vertical = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "PLUS",
-                    fontSize = (fontSize.value * 0.42f).sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
+                    fontSize = (fontSize.value * 0.40f).sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     letterSpacing = 0.8.sp
                 )
             }
-        } else {
-            Text(
-                text = "Plus",
-                style = androidx.compose.ui.text.TextStyle(
-                    brush = Brush.linearGradient(listOf(ElectricBlue, CyanGradient)),
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = fontSize
-                )
-            )
         }
     }
 }

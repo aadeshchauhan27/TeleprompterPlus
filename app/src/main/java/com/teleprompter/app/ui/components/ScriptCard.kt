@@ -36,15 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teleprompter.app.core.theme.ElectricBlue
-import com.teleprompter.app.core.theme.TextDarkHeading
-import com.teleprompter.app.core.theme.TextDarkMuted
 import com.teleprompter.app.core.util.ScriptUtils
 import com.teleprompter.app.data.local.entity.ScriptEntity
 
@@ -64,41 +60,36 @@ fun ScriptCard(
             .fillMaxWidth()
             .shadow(
                 elevation = 2.dp,
-                shape = RoundedCornerShape(18.dp),
-                spotColor = Color(0x1A0F172A),
-                ambientColor = Color(0x0A0F172A)
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color(0x14000000),
+                ambientColor = Color(0x0A000000)
             )
-            .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
             .border(
                 width = 1.dp,
-                color = if (script.isFavorite) ElectricBlue.copy(alpha = 0.45f) else Color(0xFFE2E8F0),
-                shape = RoundedCornerShape(18.dp)
+                color = if (script.isFavorite) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick)
     ) {
-        // Left gradient accent stripe for favorite/active script
+        // Left accent stripe for favorite script
         if (script.isFavorite) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .padding(start = 0.dp)
                     .width(4.dp)
-                    .clip(RoundedCornerShape(topStart = 18.dp, bottomStart = 18.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(ElectricBlue, Color(0xFF38BDF8))
-                        )
-                    )
+                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 18.dp)
+                .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
-            // Header: Title + Star Favorite + Options Menu
+            // Header Row: Title + Star + 3-dot dropdown menu
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -107,10 +98,9 @@ fun ScriptCard(
                 Text(
                     text = script.title.ifBlank { "Untitled Script" },
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = TextDarkHeading,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp,
-                        letterSpacing = (-0.2).sp
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 17.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -119,31 +109,31 @@ fun ScriptCard(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    // One-tap Star Favorite Toggle
+                    // One-tap Favorite Toggle
                     IconButton(
                         onClick = onFavoriteToggle,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(34.dp)
                     ) {
                         Icon(
-                            imageVector = if (script.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                            contentDescription = if (script.isFavorite) "Unfavorite" else "Favorite",
-                            tint = if (script.isFavorite) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                            imageVector = if (script.isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
+                            contentDescription = if (script.isFavorite) "Remove from favorites" else "Add to favorites",
+                            tint = if (script.isFavorite) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier.size(20.dp)
                         )
                     }
 
-                    // More Options Dropdown
+                    // 3-dot More Menu
                     Box {
                         IconButton(
                             onClick = { menuExpanded = true },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(34.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Options",
-                                tint = Color(0xFF64748B),
+                                contentDescription = "More actions",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -151,17 +141,17 @@ fun ScriptCard(
                         DropdownMenu(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false },
-                            modifier = Modifier.background(Color.White)
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                         ) {
                             DropdownMenuItem(
-                                text = { Text(if (script.isFavorite) "Remove from Favorites" else "Add to Favorites") },
+                                text = { Text(if (script.isFavorite) "Unstar" else "Star Favorite", color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     menuExpanded = false
                                     onFavoriteToggle()
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Duplicate") },
+                                text = { Text("Duplicate", color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     menuExpanded = false
                                     onDuplicate()
@@ -179,21 +169,21 @@ fun ScriptCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // Script Text Preview
+            // Body Preview (2 lines)
             Text(
-                text = script.content.ifBlank { "Tap to write your script..." },
+                text = script.content.ifBlank { "No content yet. Tap to start writing your script." },
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = if (script.content.isBlank()) Color(0xFF94A3B8) else Color(0xFF475569),
-                    fontSize = 14.sp,
-                    lineHeight = 21.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 13.5.sp,
+                    lineHeight = 19.sp
                 ),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Footer Metadata Badges
             Row(
@@ -201,75 +191,66 @@ fun ScriptCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Word Count Badge Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFF1F5F9))
-                        .padding(horizontal = 9.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Description,
-                            contentDescription = null,
-                            tint = Color(0xFF64748B),
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${script.wordCount} words",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF475569)
-                        )
-                    }
-                }
+                // Word Count Badge
+                MetadataBadge(
+                    icon = Icons.Default.Description,
+                    text = "${script.wordCount} words"
+                )
 
-                // Estimated Reading Time Badge Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFF1F5F9))
-                        .padding(horizontal = 9.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = null,
-                            tint = Color(0xFF64748B),
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        val readTimeStr = if (script.estimatedReadingTime <= 0) "< 1 min" else "${script.estimatedReadingTime} min"
-                        Text(
-                            text = readTimeStr,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF475569)
-                        )
-                    }
-                }
+                // Reading Time Badge
+                MetadataBadge(
+                    icon = Icons.Default.Schedule,
+                    text = ScriptUtils.formatReadingTime(script.estimatedReadingTime)
+                )
 
-                // Custom Settings Indicator if configured
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Custom preset indicator pill
                 if (script.hasCustomSettings) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(ElectricBlue.copy(alpha = 0.1f))
-                            .padding(horizontal = 9.dp, vertical = 4.dp),
-                        contentAlignment = Alignment.Center
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
                         Text(
-                            text = "Customized",
-                            fontSize = 11.sp,
+                            text = "FORMATTED",
+                            fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ElectricBlue
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = 0.5.sp
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MetadataBadge(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 9.dp, vertical = 4.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(13.dp)
+        )
+        Text(
+            text = text,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

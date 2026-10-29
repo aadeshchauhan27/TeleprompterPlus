@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.teleprompter.app.core.camera.CameraLens
+import com.teleprompter.app.core.model.AppThemeMode
 import com.teleprompter.app.core.model.FontStyleType
 import com.teleprompter.app.core.model.PresetType
 import com.teleprompter.app.core.model.TeleprompterSettings
@@ -46,6 +47,7 @@ interface SettingsRepository {
     suspend fun updateDefaultFlashOn(flashOn: Boolean)
     // General Preferences
     suspend fun updateKeepScreenAwake(keepAwake: Boolean)
+    suspend fun updateAppThemeMode(themeMode: AppThemeMode)
     // Script Settings Batch Apply
     suspend fun applyScriptSettings(
         scrollSpeed: Int,
@@ -92,6 +94,7 @@ class SettingsRepositoryImpl(
         val RECORD_AUDIO = booleanPreferencesKey("record_audio")
         val DEFAULT_FLASH_ON = booleanPreferencesKey("default_flash_on")
         val KEEP_SCREEN_AWAKE = booleanPreferencesKey("keep_screen_awake")
+        val APP_THEME_MODE = stringPreferencesKey("app_theme_mode")
     }
 
     override val settingsFlow: Flow<TeleprompterSettings> = context.dataStore.data.map { preferences ->
@@ -130,6 +133,13 @@ class SettingsRepositoryImpl(
             VideoQualityPreference.HIGH
         }
 
+        val themeModeString = preferences[PreferencesKeys.APP_THEME_MODE] ?: AppThemeMode.SYSTEM.name
+        val appThemeMode = try {
+            AppThemeMode.valueOf(themeModeString)
+        } catch (_: Exception) {
+            AppThemeMode.SYSTEM
+        }
+
         TeleprompterSettings(
             scrollSpeed = preferences[PreferencesKeys.SCROLL_SPEED] ?: 50,
             fontSize = preferences[PreferencesKeys.FONT_SIZE] ?: 28,
@@ -152,7 +162,8 @@ class SettingsRepositoryImpl(
             videoQuality = videoQuality,
             recordAudio = preferences[PreferencesKeys.RECORD_AUDIO] ?: true,
             defaultFlashOn = preferences[PreferencesKeys.DEFAULT_FLASH_ON] ?: false,
-            keepScreenAwake = preferences[PreferencesKeys.KEEP_SCREEN_AWAKE] ?: true
+            keepScreenAwake = preferences[PreferencesKeys.KEEP_SCREEN_AWAKE] ?: true,
+            appThemeMode = appThemeMode
         )
     }
 
@@ -310,6 +321,12 @@ class SettingsRepositoryImpl(
         }
     }
 
+    override suspend fun updateAppThemeMode(themeMode: AppThemeMode) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_THEME_MODE] = themeMode.name
+        }
+    }
+
     override suspend fun applyScriptSettings(
         scrollSpeed: Int,
         fontSize: Int,
@@ -367,6 +384,7 @@ class SettingsRepositoryImpl(
             preferences[PreferencesKeys.RECORD_AUDIO] = defaultSettings.recordAudio
             preferences[PreferencesKeys.DEFAULT_FLASH_ON] = defaultSettings.defaultFlashOn
             preferences[PreferencesKeys.KEEP_SCREEN_AWAKE] = defaultSettings.keepScreenAwake
+            preferences[PreferencesKeys.APP_THEME_MODE] = defaultSettings.appThemeMode.name
         }
     }
 }
