@@ -43,6 +43,17 @@ class SyncRepositoryImpl(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : SyncRepository {
 
+    companion object {
+        // App-isolated dedicated root collection to prevent overlapping with WakeUp or Phone Doc
+        const val TELEPROMPTER_COLLECTION = "teleprompter_users"
+        const val SCRIPTS_SUBCOLLECTION = "scripts"
+        const val SETTINGS_SUBCOLLECTION = "settings"
+        const val PREFERENCES_DOCUMENT = "preferences"
+
+        // Legacy collection for backwards-compatible migration
+        private const val LEGACY_COLLECTION = "users"
+    }
+
     private object SyncKeys {
         val CLOUD_SYNC_ENABLED = booleanPreferencesKey("cloud_sync_enabled")
         val LAST_SYNC_TIME = longPreferencesKey("last_sync_timestamp")
@@ -99,14 +110,45 @@ class SyncRepositoryImpl(
         try {
             val firestore = FirebaseFirestore.getInstance()
             val userId = user.id
-            val userScriptsCollection = firestore.collection("users").document(userId).collection("scripts")
 
-            // 1. Fetch remote scripts
-            val remoteSnapshot = try {
+            // Dedicated teleprompter user document & subcollections
+            val userDocRef = firestore.collection(TELEPROMPTER_COLLECTION).document(userId)
+            val userScriptsCollection = userDocRef.collection(SCRIPTS_SUBCOLLECTION)
+
+            // 0. Update user profile metadata at teleprompter_users/{userId}
+            try {
+                userDocRef.set(
+                    mapOf(
+                        "userId" to userId,
+                        "email" to (user.email ?: ""),
+                        "displayName" to (user.displayName ?: ""),
+                        "app" to "Teleprompter Plus",
+                        "lastSyncedAt" to System.currentTimeMillis()
+                    ),
+                    SetOptions.merge()
+                ).await()
+            } catch (_: Exception) {}
+
+            // 1. Fetch remote scripts from teleprompter_users/{userId}/scripts
+            var remoteSnapshot = try {
                 userScriptsCollection.get().await()
             } catch (e: Exception) {
                 _syncStatus.value = SyncStatus.OFFLINE
                 return@withContext Result.failure(e)
+            }
+
+            // Seamless migration: If teleprompter_users collection is empty, check legacy "users" collection
+            if (remoteSnapshot.isEmpty) {
+                try {
+                    val legacySnapshot = firestore.collection(LEGACY_COLLECTION)
+                        .document(userId)
+                        .collection(SCRIPTS_SUBCOLLECTION)
+                        .get()
+                        .await()
+                    if (!legacySnapshot.isEmpty) {
+                        remoteSnapshot = legacySnapshot
+                    }
+                } catch (_: Exception) {}
             }
 
             val remoteScriptsMap = mutableMapOf<String, Map<String, Any>>()
@@ -121,13 +163,13 @@ class SyncRepositoryImpl(
             val localScripts = scriptDao.getAllScripts().first()
             val localScriptsMap = localScripts.associateBy { it.id }
 
-            // 3. Process Local -> Remote Sync
+            // 3. Process Local -> Remote Sync (Saving strictly to teleprompter_users collection)
             for (local in localScripts) {
                 val remoteData = remoteScriptsMap[local.id]
                 val remoteUpdatedAt = (remoteData?.get("updatedAt") as? Number)?.toLong() ?: 0L
 
                 if (remoteData == null || local.updatedAt >= remoteUpdatedAt) {
-                    // Local is newer or doesn't exist remotely -> push to cloud
+                    // Local is newer or doesn't exist remotely -> push to teleprompter_users collection
                     val scriptMap = mapOf(
                         "id" to local.id,
                         "title" to local.title,
@@ -202,9 +244,9 @@ class SyncRepositoryImpl(
                 }
             }
 
-            // 5. Sync User Settings to Cloud (never videos!)
+            // 5. Sync User Settings to Cloud (stored under teleprompter_users/{userId}/settings/preferences)
             val currentSettings = settingsRepository.settingsFlow.first()
-            val settingsDoc = firestore.collection("users").document(userId).collection("settings").document("preferences")
+            val settingsDoc = userDocRef.collection(SETTINGS_SUBCOLLECTION).document(PREFERENCES_DOCUMENT)
             val settingsMap = mapOf(
                 "scrollSpeed" to currentSettings.scrollSpeed,
                 "fontSize" to currentSettings.fontSize,
