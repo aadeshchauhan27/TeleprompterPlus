@@ -59,6 +59,7 @@ import com.teleprompter.app.core.model.FontStyleType
 import com.teleprompter.app.core.model.PresetType
 import com.teleprompter.app.core.model.TextAlignmentType
 import com.teleprompter.app.core.theme.RecordRed
+import com.teleprompter.app.core.util.rememberAppHaptics
 import java.util.Locale
 
 @Composable
@@ -70,6 +71,7 @@ fun ScriptSettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val settings = uiState.settings
     val script = uiState.script
+    val haptics = rememberAppHaptics()
 
     var showResetConfirmation by remember { mutableStateOf(false) }
 
@@ -105,7 +107,12 @@ fun ScriptSettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onNavigateBack) {
+                IconButton(
+                    onClick = {
+                        haptics.click()
+                        onNavigateBack()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
@@ -127,6 +134,7 @@ fun ScriptSettingsScreen(
             // "Done" Pill Button
             Button(
                 onClick = {
+                    haptics.confirm()
                     viewModel.saveScriptSpecificSettings(onNavigateBack)
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -221,7 +229,10 @@ fun ScriptSettingsScreen(
                             .weight(1f)
                             .clip(RoundedCornerShape(10.dp))
                             .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { viewModel.applyPreset(preset) }
+                            .clickable {
+                                haptics.selection()
+                                viewModel.applyPreset(preset)
+                            }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -349,7 +360,10 @@ fun ScriptSettingsScreen(
                             .height(44.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(if (isChosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { viewModel.setTextAlignment(align) },
+                            .clickable {
+                                haptics.selection()
+                                viewModel.setTextAlignment(align)
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -720,6 +734,7 @@ private fun StepperPill(
     onDecrement: () -> Unit,
     onIncrement: () -> Unit
 ) {
+    val haptics = rememberAppHaptics()
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
@@ -728,7 +743,10 @@ private fun StepperPill(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = onDecrement,
+            onClick = {
+                haptics.lightTick()
+                onDecrement()
+            },
             modifier = Modifier.size(28.dp)
         ) {
             Icon(
@@ -748,7 +766,10 @@ private fun StepperPill(
         )
 
         IconButton(
-            onClick = onIncrement,
+            onClick = {
+                haptics.lightTick()
+                onIncrement()
+            },
             modifier = Modifier.size(28.dp)
         ) {
             Icon(

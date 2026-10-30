@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teleprompter.app.core.util.ScriptUtils
+import com.teleprompter.app.core.util.rememberAppHaptics
 
 @Composable
 fun ScriptEditorScreen(
@@ -56,6 +57,7 @@ fun ScriptEditorScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val haptics = rememberAppHaptics()
 
     Column(
         modifier = modifier
@@ -72,7 +74,12 @@ fun ScriptEditorScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = onNavigateBack) {
+            IconButton(
+                onClick = {
+                    haptics.click()
+                    onNavigateBack()
+                }
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
@@ -111,6 +118,7 @@ fun ScriptEditorScreen(
 
             TextButton(
                 onClick = {
+                    haptics.confirm()
                     viewModel.saveExplicitly {
                         Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
                     }
@@ -175,7 +183,10 @@ fun ScriptEditorScreen(
                         .padding(horizontal = 4.dp, vertical = 4.dp)
                 ) {
                     IconButton(
-                        onClick = { viewModel.undo() },
+                        onClick = {
+                            haptics.lightTick()
+                            viewModel.undo()
+                        },
                         enabled = uiState.canUndo
                     ) {
                         Icon(
@@ -187,7 +198,10 @@ fun ScriptEditorScreen(
                     }
 
                     IconButton(
-                        onClick = { viewModel.redo() },
+                        onClick = {
+                            haptics.lightTick()
+                            viewModel.redo()
+                        },
                         enabled = uiState.canRedo
                     ) {
                         Icon(
@@ -209,6 +223,7 @@ fun ScriptEditorScreen(
                 ) {
                     IconButton(
                         onClick = {
+                            haptics.click()
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             val clip = android.content.ClipData.newPlainText("Script", uiState.content)
                             clipboard.setPrimaryClip(clip)
@@ -225,6 +240,7 @@ fun ScriptEditorScreen(
 
                     IconButton(
                         onClick = {
+                            haptics.click()
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             val clip = clipboard.primaryClip
                             if (clip != null && clip.itemCount > 0) {

@@ -70,6 +70,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.teleprompter.app.core.util.rememberAppHaptics
 import com.teleprompter.app.ui.components.EmptyState
 import com.teleprompter.app.ui.components.ScriptCard
 import com.teleprompter.app.ui.components.TeleprompterBrandTitle
@@ -88,6 +89,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val haptics = rememberAppHaptics()
     val tabs = listOf("All", "Recent", "Favorites")
 
     var isFabExpanded by remember { mutableStateOf(false) }
@@ -121,6 +123,7 @@ fun HomeScreen(
                         // Choice 1: Paste from Clipboard (Icon only)
                         SmallFloatingActionButton(
                             onClick = {
+                                haptics.confirm()
                                 isFabExpanded = false
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                                 val clip = clipboard?.primaryClip
@@ -156,6 +159,7 @@ fun HomeScreen(
                         // Choice 2: Create Blank Script (Icon only)
                         SmallFloatingActionButton(
                             onClick = {
+                                haptics.click()
                                 isFabExpanded = false
                                 onNavigateToCreateScript()
                             },
@@ -178,7 +182,10 @@ fun HomeScreen(
 
                 // Primary Floating Action Button (+)
                 FloatingActionButton(
-                    onClick = { isFabExpanded = !isFabExpanded },
+                    onClick = {
+                        haptics.click()
+                        isFabExpanded = !isFabExpanded
+                    },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape,
@@ -271,7 +278,10 @@ fun HomeScreen(
                     val isSelected = uiState.selectedTab == index
                     Tab(
                         selected = isSelected,
-                        onClick = { viewModel.selectTab(index) },
+                        onClick = {
+                            haptics.selection()
+                            viewModel.selectTab(index)
+                        },
                         text = {
                             Text(
                                 text = title,
@@ -325,14 +335,22 @@ fun HomeScreen(
                         ) { script ->
                             ScriptCard(
                                 script = script,
-                                onClick = { onNavigateToScriptDetail(script.id) },
-                                onFavoriteToggle = { viewModel.toggleFavorite(script) },
+                                onClick = {
+                                    haptics.click()
+                                    onNavigateToScriptDetail(script.id)
+                                },
+                                onFavoriteToggle = {
+                                    haptics.selection()
+                                    viewModel.toggleFavorite(script)
+                                },
                                 onDuplicate = {
+                                    haptics.confirm()
                                     viewModel.duplicateScript(script.id) {
                                         Toast.makeText(context, "Script duplicated", Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 onDelete = {
+                                    haptics.warning()
                                     viewModel.deleteScript(script.id)
                                     Toast.makeText(context, "Script deleted", Toast.LENGTH_SHORT).show()
                                 }

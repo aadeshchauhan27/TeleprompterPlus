@@ -93,6 +93,7 @@ import com.teleprompter.app.core.theme.ElectricBlue
 import com.teleprompter.app.core.theme.ReadingGuideBorder
 import com.teleprompter.app.core.theme.ReadingGuideHighlight
 import com.teleprompter.app.core.theme.RecordRed
+import com.teleprompter.app.core.util.rememberAppHaptics
 import com.teleprompter.app.ui.components.OverlayCustomizationSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -108,6 +109,7 @@ fun CameraRecordingScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val haptics = rememberAppHaptics()
     val uiState by viewModel.uiState.collectAsState()
     val cameraStatus = uiState.cameraStatus
     val settings = uiState.settings
@@ -240,14 +242,17 @@ fun CameraRecordingScreen(
             coroutineScope.launch {
                 for (i in settings.countdownSeconds downTo 1) {
                     countdownLabel = i.toString()
+                    haptics.countdownTick()
                     delay(1000)
                 }
                 countdownLabel = "RECORD"
+                haptics.heavyClick()
                 delay(400)
                 countdownLabel = null
                 onAction()
             }
         } else {
+            haptics.heavyClick()
             onAction()
         }
     }
@@ -548,7 +553,10 @@ fun CameraRecordingScreen(
             ) {
                 // Close Button
                 IconButton(
-                    onClick = onNavigateBack,
+                    onClick = {
+                        haptics.click()
+                        onNavigateBack()
+                    },
                     modifier = Modifier
                         .size(42.dp)
                         .background(Color.Black.copy(alpha = 0.45f), CircleShape)
@@ -567,7 +575,10 @@ fun CameraRecordingScreen(
                 ) {
                     // Flash / Torch Toggle
                     IconButton(
-                        onClick = { viewModel.toggleTorch() },
+                        onClick = {
+                            haptics.click()
+                            viewModel.toggleTorch()
+                        },
                         modifier = Modifier
                             .size(42.dp)
                             .background(
@@ -586,6 +597,7 @@ fun CameraRecordingScreen(
                     // Switch Camera Lens (Front/Back)
                     IconButton(
                         onClick = {
+                            haptics.click()
                             previewViewRef?.let { preview ->
                                 viewModel.toggleCameraLens(lifecycleOwner, preview)
                             }
@@ -604,7 +616,10 @@ fun CameraRecordingScreen(
 
                     // In-camera Customization Gear
                     IconButton(
-                        onClick = { viewModel.toggleCustomizationSheet() },
+                        onClick = {
+                            haptics.click()
+                            viewModel.toggleCustomizationSheet()
+                        },
                         modifier = Modifier
                             .size(42.dp)
                             .background(Color.Black.copy(alpha = 0.45f), CircleShape)
@@ -682,6 +697,7 @@ fun CameraRecordingScreen(
                                 .background(Color.Black.copy(alpha = 0.55f))
                                 .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
                                 .clickable {
+                                    haptics.confirm()
                                     scrollOffsetPx = 0f
                                 },
                             contentAlignment = Alignment.Center
@@ -724,6 +740,7 @@ fun CameraRecordingScreen(
                                 .background(if (isPromptPlaying) ElectricBlue else Color.Black.copy(alpha = 0.65f))
                                 .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape)
                                 .clickable {
+                                    haptics.heavyClick()
                                     isPromptPlaying = !isPromptPlaying
                                 },
                             contentAlignment = Alignment.Center
@@ -769,6 +786,7 @@ fun CameraRecordingScreen(
                                     .padding(6.dp)
                                     .clickable {
                                         if (!isFinalizing) {
+                                            haptics.confirm()
                                             isPromptPlaying = false
                                             isFinalizing = true
                                             viewModel.stopRecording()

@@ -86,12 +86,13 @@ class AuthRepositoryImpl(
             // Restore from local DataStore session
             val prefs = context.dataStore.data.first()
             val userId = prefs[AuthKeys.USER_ID]
-            if (!userId.isNullOrBlank()) {
-                val email = prefs[AuthKeys.USER_EMAIL]
+            val email = prefs[AuthKeys.USER_EMAIL]
+            val effectiveId = if (!email.isNullOrBlank()) email.trim().lowercase() else userId
+            if (!effectiveId.isNullOrBlank()) {
                 val name = prefs[AuthKeys.USER_NAME]
                 val isAnon = prefs[AuthKeys.IS_ANONYMOUS] ?: false
                 _currentUser.value = AuthUser(
-                    id = userId,
+                    id = effectiveId,
                     email = email,
                     displayName = name,
                     isAnonymous = isAnon
@@ -150,7 +151,7 @@ class AuthRepositoryImpl(
             }
 
             val user = AuthUser(
-                id = firebaseUid ?: "google_${email.hashCode()}",
+                id = email.trim().lowercase(),
                 email = email,
                 displayName = cleanName,
                 photoUrl = null,
@@ -180,7 +181,7 @@ class AuthRepositoryImpl(
             }
 
             val user = AuthUser(
-                id = firebaseUid ?: "google_${email.hashCode()}",
+                id = email.trim().lowercase(),
                 email = email,
                 displayName = name,
                 photoUrl = photoUrl,
@@ -205,9 +206,10 @@ class AuthRepositoryImpl(
                 val authResult = FirebaseAuth.getInstance().signInWithCredential(credential).await()
                 val firebaseUser = authResult.user
                 if (firebaseUser != null) {
+                    val finalEmail = firebaseUser.email ?: email
                     val user = AuthUser(
-                        id = firebaseUser.uid,
-                        email = firebaseUser.email ?: email,
+                        id = finalEmail?.trim()?.lowercase() ?: firebaseUser.uid,
+                        email = finalEmail,
                         displayName = firebaseUser.displayName ?: name,
                         photoUrl = firebaseUser.photoUrl?.toString(),
                         isAnonymous = false
@@ -219,9 +221,10 @@ class AuthRepositoryImpl(
             }
 
             // Fallback / direct account sign-in
+            val finalEmail = email ?: "user@gmail.com"
             val user = AuthUser(
-                id = "google_${UUID.randomUUID().toString().take(8)}",
-                email = email ?: "user@gmail.com",
+                id = finalEmail.trim().lowercase(),
+                email = finalEmail,
                 displayName = name ?: "Google User",
                 photoUrl = null,
                 isAnonymous = false
@@ -230,9 +233,10 @@ class AuthRepositoryImpl(
             _currentUser.value = user
             Result.success(user)
         } catch (e: Exception) {
+            val finalEmail = email ?: "user@gmail.com"
             val user = AuthUser(
-                id = "google_offline_${UUID.randomUUID().toString().take(8)}",
-                email = email ?: "user@gmail.com",
+                id = finalEmail.trim().lowercase(),
+                email = finalEmail,
                 displayName = name ?: "Google User",
                 photoUrl = null,
                 isAnonymous = false
@@ -244,8 +248,9 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun signInWithEmail(email: String, name: String?): Result<AuthUser> {
+        val cleanEmail = email.trim().lowercase()
         val user = AuthUser(
-            id = "email_${UUID.randomUUID().toString().take(8)}",
+            id = cleanEmail,
             email = email,
             displayName = name ?: email.substringBefore("@"),
             isAnonymous = false

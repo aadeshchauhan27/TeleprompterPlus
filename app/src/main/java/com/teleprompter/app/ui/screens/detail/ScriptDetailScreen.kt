@@ -65,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teleprompter.app.core.util.ScriptUtils
+import com.teleprompter.app.core.util.rememberAppHaptics
 
 @Composable
 fun ScriptDetailScreen(
@@ -79,6 +80,7 @@ fun ScriptDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val haptics = rememberAppHaptics()
     val script = uiState.script
 
     if (uiState.isLoading) {
@@ -117,7 +119,10 @@ fun ScriptDetailScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
-                onClick = onNavigateBack,
+                onClick = {
+                    haptics.click()
+                    onNavigateBack()
+                },
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
@@ -135,7 +140,10 @@ fun ScriptDetailScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 // One-tap Favorite Star
                 IconButton(
-                    onClick = { viewModel.toggleFavorite() },
+                    onClick = {
+                        haptics.selection()
+                        viewModel.toggleFavorite()
+                    },
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
@@ -153,6 +161,7 @@ fun ScriptDetailScreen(
                 // Share Action
                 IconButton(
                     onClick = {
+                        haptics.click()
                         val sendIntent = Intent().apply {
                             action = Intent.ACTION_SEND
                             putExtra(Intent.EXTRA_TEXT, viewModel.getExportText())
@@ -229,7 +238,10 @@ fun ScriptDetailScreen(
         ) {
             // Primary CTA: Start Teleprompter
             Button(
-                onClick = { onStartTeleprompter(script.id) },
+                onClick = {
+                    haptics.heavyClick()
+                    onStartTeleprompter(script.id)
+                },
                 modifier = Modifier
                     .weight(1f)
                     .height(52.dp),
@@ -262,7 +274,10 @@ fun ScriptDetailScreen(
 
             // Secondary CTA: Record Video
             OutlinedButton(
-                onClick = { onStartRecording(script.id) },
+                onClick = {
+                    haptics.heavyClick()
+                    onStartRecording(script.id)
+                },
                 modifier = Modifier
                     .weight(1f)
                     .height(52.dp),
@@ -309,13 +324,17 @@ fun ScriptDetailScreen(
             MonochromeActionButton(
                 icon = Icons.Outlined.Edit,
                 label = "Edit",
-                onClick = { onNavigateToEditor(script.id) }
+                onClick = {
+                    haptics.click()
+                    onNavigateToEditor(script.id)
+                }
             )
 
             MonochromeActionButton(
                 icon = Icons.Outlined.ContentCopy,
                 label = "Duplicate",
                 onClick = {
+                    haptics.confirm()
                     viewModel.duplicateScript {
                         Toast.makeText(context, "Script duplicated", Toast.LENGTH_SHORT).show()
                     }
@@ -325,13 +344,17 @@ fun ScriptDetailScreen(
             MonochromeActionButton(
                 icon = Icons.Outlined.Tune,
                 label = "Settings",
-                onClick = { onNavigateToSettings(script.id) }
+                onClick = {
+                    haptics.click()
+                    onNavigateToSettings(script.id)
+                }
             )
 
             MonochromeActionButton(
                 icon = Icons.Outlined.FileDownload,
                 label = "Export",
                 onClick = {
+                    haptics.click()
                     val sendIntent = Intent().apply {
                         action = Intent.ACTION_SEND
                         putExtra(Intent.EXTRA_SUBJECT, script.title)
@@ -392,7 +415,10 @@ fun ScriptDetailScreen(
                 title = "Folder",
                 trailingText = uiState.folderName ?: "Uncategorized",
                 hasChevron = true,
-                onClick = { viewModel.openFolderDialog() }
+                onClick = {
+                    haptics.click()
+                    viewModel.openFolderDialog()
+                }
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
@@ -402,7 +428,10 @@ fun ScriptDetailScreen(
                 icon = Icons.Outlined.VideoLibrary,
                 title = "View Recordings",
                 hasChevron = true,
-                onClick = onNavigateToRecordings
+                onClick = {
+                    haptics.click()
+                    onNavigateToRecordings()
+                }
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
@@ -411,7 +440,10 @@ fun ScriptDetailScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { viewModel.toggleFavorite() }
+                    .clickable {
+                        haptics.selection()
+                        viewModel.toggleFavorite()
+                    }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -444,7 +476,10 @@ fun ScriptDetailScreen(
 
                 Switch(
                     checked = script.isFavorite,
-                    onCheckedChange = { viewModel.toggleFavorite() },
+                    onCheckedChange = {
+                        haptics.selection()
+                        viewModel.toggleFavorite()
+                    },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                         checkedTrackColor = MaterialTheme.colorScheme.primary
@@ -460,7 +495,10 @@ fun ScriptDetailScreen(
                 title = "Delete Script",
                 titleColor = Color(0xFFEF4444),
                 iconTint = Color(0xFFEF4444),
-                onClick = { viewModel.openDeleteDialog() }
+                onClick = {
+                    haptics.warning()
+                    viewModel.openDeleteDialog()
+                }
             )
         }
 
@@ -491,7 +529,10 @@ fun ScriptDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { viewModel.moveToFolder(null) }
+                            .clickable {
+                                haptics.selection()
+                                viewModel.moveToFolder(null)
+                            }
                             .padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -506,7 +547,10 @@ fun ScriptDetailScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.moveToFolder(folder.id) }
+                                .clickable {
+                                    haptics.selection()
+                                    viewModel.moveToFolder(folder.id)
+                                }
                                 .padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -543,6 +587,7 @@ fun ScriptDetailScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptics.warning()
                         viewModel.deleteScript {
                             Toast.makeText(context, "Script deleted", Toast.LENGTH_SHORT).show()
                             onNavigateBack()

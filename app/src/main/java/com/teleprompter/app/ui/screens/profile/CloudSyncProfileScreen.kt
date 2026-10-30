@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.teleprompter.app.core.model.AppThemeMode
 import com.teleprompter.app.core.theme.RecordRed
+import com.teleprompter.app.core.util.rememberAppHaptics
 import com.teleprompter.app.data.sync.SyncStatus
 import com.teleprompter.app.ui.AppViewModelProvider
 import java.text.SimpleDateFormat
@@ -87,6 +88,7 @@ fun CloudSyncProfileScreen(
     viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val context = LocalContext.current
+    val haptics = rememberAppHaptics()
     val uiState by viewModel.uiState.collectAsState()
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
@@ -110,7 +112,12 @@ fun CloudSyncProfileScreen(
                 .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onNavigateBack) {
+            IconButton(
+                onClick = {
+                    haptics.click()
+                    onNavigateBack()
+                }
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
@@ -300,6 +307,7 @@ fun CloudSyncProfileScreen(
                 Switch(
                     checked = uiState.isCloudSyncEnabled,
                     onCheckedChange = {
+                        haptics.selection()
                         viewModel.toggleCloudSync(it)
                         val msg = if (it) "Cloud sync enabled" else "Cloud sync paused (Local-First)"
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -371,6 +379,7 @@ fun CloudSyncProfileScreen(
                     } else {
                         OutlinedButton(
                             onClick = {
+                                haptics.click()
                                 viewModel.syncNow()
                                 Toast.makeText(context, "Synchronizing...", Toast.LENGTH_SHORT).show()
                             },

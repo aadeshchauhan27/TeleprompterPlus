@@ -65,6 +65,7 @@ import com.teleprompter.app.core.model.FontStyleType
 import com.teleprompter.app.core.theme.ElectricBlue
 import com.teleprompter.app.core.theme.ReadingGuideBorder
 import com.teleprompter.app.core.theme.ReadingGuideHighlight
+import com.teleprompter.app.core.util.rememberAppHaptics
 import com.teleprompter.app.ui.components.OverlayCustomizationSheet
 import com.teleprompter.app.ui.screens.settings.ScriptSettingsViewModel
 
@@ -82,6 +83,7 @@ fun TeleprompterPromptScreen(
     val settings = uiState.settings
 
     val context = LocalContext.current
+    val haptics = rememberAppHaptics()
 
     // Keep screen awake while teleprompter is active if enabled
     DisposableEffect(settings.keepScreenAwake) {
@@ -218,26 +220,38 @@ fun TeleprompterPromptScreen(
             // Close / Back button
             FloatingBarIconButton(
                 icon = Icons.Default.Close,
-                onClick = onNavigateBack
+                onClick = {
+                    haptics.click()
+                    onNavigateBack()
+                }
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Themes Shortcut (Mockup Screen 12)
                 FloatingBarIconButton(
                     icon = Icons.Default.Palette,
-                    onClick = onOpenThemes
+                    onClick = {
+                        haptics.click()
+                        onOpenThemes()
+                    }
                 )
 
                 // Overlay Customization Toggle (Mockup Screen 7)
                 FloatingBarIconButton(
                     icon = Icons.Default.Tune,
-                    onClick = { showCustomizationSheet = !showCustomizationSheet }
+                    onClick = {
+                        haptics.click()
+                        showCustomizationSheet = !showCustomizationSheet
+                    }
                 )
 
                 // Full Script Settings (Mockup Screen 5)
                 FloatingBarIconButton(
                     icon = Icons.Default.Settings,
-                    onClick = onOpenFullSettings
+                    onClick = {
+                        haptics.click()
+                        onOpenFullSettings()
+                    }
                 )
             }
         }
@@ -257,7 +271,10 @@ fun TeleprompterPromptScreen(
                     .size(46.dp)
                     .clip(CircleShape)
                     .background(Color(0x991E293B))
-                    .clickable { scrollOffset = 0f },
+                    .clickable {
+                        haptics.confirm()
+                        scrollOffset = 0f
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -274,7 +291,10 @@ fun TeleprompterPromptScreen(
                     .size(68.dp)
                     .clip(CircleShape)
                     .background(ElectricBlue)
-                    .clickable { isPlaying = !isPlaying },
+                    .clickable {
+                        haptics.heavyClick()
+                        isPlaying = !isPlaying
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

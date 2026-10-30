@@ -110,16 +110,17 @@ class SyncRepositoryImpl(
         try {
             val firestore = FirebaseFirestore.getInstance()
             val userId = user.id
+            val userKey = if (!user.email.isNullOrBlank()) user.email!!.trim().lowercase() else userId
 
-            // Dedicated teleprompter user document & subcollections
-            val userDocRef = firestore.collection(TELEPROMPTER_COLLECTION).document(userId)
+            // Dedicated teleprompter user document & subcollections (e.g. teleprompter_users/aadeshchauhan27@gmail.com)
+            val userDocRef = firestore.collection(TELEPROMPTER_COLLECTION).document(userKey)
             val userScriptsCollection = userDocRef.collection(SCRIPTS_SUBCOLLECTION)
 
-            // 0. Update user profile metadata at teleprompter_users/{userId}
+            // 0. Update user profile metadata at teleprompter_users/{userKey}
             try {
                 userDocRef.set(
                     mapOf(
-                        "userId" to userId,
+                        "userId" to userKey,
                         "email" to (user.email ?: ""),
                         "displayName" to (user.displayName ?: ""),
                         "app" to "Teleprompter Plus",
@@ -127,12 +128,15 @@ class SyncRepositoryImpl(
                     ),
                     SetOptions.merge()
                 ).await()
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.w("TeleprompterSync", "Profile metadata write warning: ${e.message}")
+            }
 
-            // 1. Fetch remote scripts from teleprompter_users/{userId}/scripts
+            // 1. Fetch remote scripts from teleprompter_users/{userKey}/scripts
             var remoteSnapshot = try {
                 userScriptsCollection.get().await()
             } catch (e: Exception) {
+                android.util.Log.e("TeleprompterSync", "Failed to fetch from $TELEPROMPTER_COLLECTION: ${e.message}")
                 _syncStatus.value = SyncStatus.OFFLINE
                 return@withContext Result.failure(e)
             }
@@ -140,11 +144,18 @@ class SyncRepositoryImpl(
             // Seamless migration: If teleprompter_users collection is empty, check legacy "users" collection
             if (remoteSnapshot.isEmpty) {
                 try {
-                    val legacySnapshot = firestore.collection(LEGACY_COLLECTION)
-                        .document(userId)
+                    var legacySnapshot = firestore.collection(LEGACY_COLLECTION)
+                        .document(userKey)
                         .collection(SCRIPTS_SUBCOLLECTION)
                         .get()
                         .await()
+                    if (legacySnapshot.isEmpty && userKey != userId) {
+                        legacySnapshot = firestore.collection(LEGACY_COLLECTION)
+                            .document(userId)
+                            .collection(SCRIPTS_SUBCOLLECTION)
+                            .get()
+                            .await()
+                    }
                     if (!legacySnapshot.isEmpty) {
                         remoteSnapshot = legacySnapshot
                     }
