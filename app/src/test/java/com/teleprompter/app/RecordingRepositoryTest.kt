@@ -72,8 +72,8 @@ class RecordingRepositoryTest {
             id = id,
             scriptId = "script_1",
             title = "Pitch Take 1",
-            videoUri = "file:///data/user/0/com.teleprompter.app/files/recordings/$id.mp4",
-            thumbnailPath = "/data/user/0/com.teleprompter.app/files/thumbnails/$id.jpg",
+            videoUri = "file:///data/user/0/com.gigabytelabs.teleprompter/files/recordings/$id.mp4",
+            thumbnailPath = "/data/user/0/com.gigabytelabs.teleprompter/files/thumbnails/$id.jpg",
             durationSeconds = 85,
             fileSizeBytes = 12_500_000L,
             createdAt = System.currentTimeMillis()

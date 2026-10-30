@@ -1,7 +1,7 @@
 # Teleprompter Plus — Production Release Document (v1.0.0)
 
 > **Application**: Teleprompter Plus  
-> **Package ID**: `com.teleprompter.app`  
+> **Package ID**: `com.gigabytelabs.teleprompter`  
 > **Release Target**: Production / Google Play Store  
 > **Version Name**: `1.0.0` | **Version Code**: `1`  
 > **Target SDK**: `36` (Android 15+) | **Min SDK**: `26` (Android 8.0 Oreo+)  
@@ -12,7 +12,13 @@
 
 ## 1. Executive Summary
 
-**Teleprompter Plus** is a professional, high-performance Android teleprompter application engineered for solo video creators, journalists, podcasters, keynote speakers, and educators. Built entirely using modern Android architecture components and 100% Jetpack Compose, the application combines smooth 60 FPS hardware-accelerated text scrolling, simultaneous 1080p/4K video recording with CameraX, a custom studio countdown pacing engine, tactile haptic feedback across all key interactions, and offline-first local Room storage with cloud synchronization isolated to dedicated Firestore collections.
+**Teleprompter Plus** is a professional, high-performance Android teleprompter application engineered for solo video creators, journalists, podcasters, keynote speakers, and educators. Part of the **GigaByte Labs** mobile product family (alongside `com.gigabytelabs.wakeup` and `com.gigabytelabs.phonedoctor`), the app uses the standardized package name:
+
+```
+com.gigabytelabs.teleprompter
+```
+
+Built entirely using modern Android architecture components and 100% Jetpack Compose, the application combines smooth 60 FPS hardware-accelerated text scrolling, simultaneous 1080p/4K video recording with CameraX, a custom studio countdown pacing engine, tactile haptic feedback across all key interactions, and offline-first local Room storage with cloud synchronization isolated to dedicated Firestore collections.
 
 This document serves as the official release manifest for the **v1.0.0 Production Release**, documenting binary artifacts, cryptographic signatures, feature specifications, architecture topology, permissions, and deployment procedures.
 
@@ -24,8 +30,8 @@ Both standalone signed APK and Google Play Store App Bundle (AAB) formats have b
 
 | Artifact Type | File Name | Size | SHA-256 Checksum | MD5 Checksum |
 | :--- | :--- | :--- | :--- | :--- |
-| **Signed Release APK** | `app/build/outputs/apk/release/app-release.apk` | 20.24 MB (20,238,515 B) | `EFA5AF6898A79C6F04889A60EF63234D52DE2ED2C7995EA3CAA34D57EBC5097F` | `592669EA604A1B1BD0DF7970C9CFE788` |
-| **Signed App Bundle** | `app/build/outputs/bundle/release/app-release.aab` | 19.39 MB (19,392,146 B) | `1E51B07097149CD819052C8EC66310D25687976F69BCA108C486E641334C2D67` | `DF41DAB48680D0AB1BEB6CC2E8DEF23D` |
+| **Signed Release APK** | `app/build/outputs/apk/release/app-release.apk` | 20.24 MB (20,238,531 B) | `C56B28B8CCC9C86289BC7B900EBD08022861529F62F993C281438BDFB9BB6497` | `5186C1A9260A2882B82882EE0BE1B503` |
+| **Signed App Bundle** | `app/build/outputs/bundle/release/app-release.aab` | 19.39 MB (19,392,240 B) | `EC980DB1E92901D75D787AC03C412B3ED06D8E0770F750121ABA59E38B2D202F` | `A77FEDD62A170A594716946113992188` |
 
 ---
 
@@ -45,7 +51,7 @@ Verification Scheme:   APK Signature Scheme v2 (apksigner verified: true)
 
 ### Certificate Fingerprints
 
-Add these certificate fingerprints to the **Google Cloud Console** under your OAuth 2.0 Client IDs and **Firebase Console** (under Project Settings -> Android App) to enable production Google Sign-In and Cloud Firestore operations:
+Add these certificate fingerprints to the **Google Cloud Console** under your OAuth 2.0 Client IDs and **Firebase Console** (under Project Settings -> Android App with package name `com.gigabytelabs.teleprompter`) to enable production Google Sign-In and Cloud Firestore operations:
 
 - **SHA-1 Digest**:
   ```
@@ -128,20 +134,20 @@ To install and verify the signed release build on any connected Android device:
 # 1. Ensure target device is attached and authorized
 adb devices
 
-# 2. If a debug version is already on the device, uninstall it first to avoid certificate mismatch:
-adb uninstall com.teleprompter.app
+# 2. If an earlier version with another signature exists on device, uninstall first:
+adb uninstall com.gigabytelabs.teleprompter
 
 # 3. Stream-install the signed release APK
 adb install "app\build\outputs\apk\release\app-release.apk"
 
 # 4. Launch the application
-adb shell am start -n com.teleprompter.app/.MainActivity
+adb shell am start -n com.gigabytelabs.teleprompter/com.teleprompter.app.MainActivity
 ```
 
 ### 7.2 Google Play Console Submission (App Bundle)
 
 1. Open the [Google Play Console](https://play.google.com/console).
-2. Select your application or create a new application named **Teleprompter Plus**.
+2. Select your application or create a new application named **Teleprompter Plus** with Package name `com.gigabytelabs.teleprompter`.
 3. Navigate to **Release -> Production** (or **Testing -> Internal Testing**).
 4. Click **Create new release**.
 5. Upload the App Bundle file:  
@@ -162,9 +168,10 @@ adb shell am start -n com.teleprompter.app/.MainActivity
 ## 8. Summary of Release Verification
 
 - **Lint Vital Analysis**: Completed with **0 errors**.
+- **Unit Tests**: 100% passed (`testDebugUnitTest` executed 17 test suites).
 - **Kotlin 2.0 Bytecode Compilation**: Completed with **0 errors**.
 - **APK Signature Verification**: Passed (`apksigner verify -v` reports `Verifies: true` under Scheme v2).
-- **Git Branch Status**: Up to date on `main` with all signing configs and haptics tracked.
+- **Git Branch Status**: Up to date on `main` with all signing configs, package ID, and haptics tracked.
 
 *Signed off by*: **Lead Mobile Engineer / Antigravity Agent**  
-*Release Timestamp*: **October 30, 2026 — 23:33 IST**
+*Release Timestamp*: **October 30, 2026 — 23:53 IST**
