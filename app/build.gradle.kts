@@ -1,4 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
   alias(libs.plugins.android.application)
@@ -26,10 +28,34 @@ android {
     }
   }
 
+  signingConfigs {
+    create("release") {
+      val keystorePropsFile = rootProject.file("keystore.properties")
+      if (keystorePropsFile.exists()) {
+        val properties = Properties()
+        FileInputStream(keystorePropsFile).use { properties.load(it) }
+        val storeFilePath = properties.getProperty("storeFile") ?: "release.keystore"
+        storeFile = if (file(storeFilePath).isAbsolute) file(storeFilePath) else rootProject.file(storeFilePath)
+        storePassword = properties.getProperty("storePassword")
+        keyAlias = properties.getProperty("keyAlias")
+        keyPassword = properties.getProperty("keyPassword")
+      } else {
+        val defaultDebugKeystore = file("${System.getProperty("user.home")}/.android/debug.keystore")
+        if (defaultDebugKeystore.exists()) {
+          storeFile = defaultDebugKeystore
+          storePassword = "android"
+          keyAlias = "androiddebugkey"
+          keyPassword = "android"
+        }
+      }
+    }
+  }
+
   buildTypes {
     release {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      signingConfig = signingConfigs.getByName("release")
     }
     debug {
       isDebuggable = true
