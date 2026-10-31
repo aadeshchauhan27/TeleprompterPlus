@@ -1,5 +1,7 @@
 package com.teleprompter.app.ui.screens.profile
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -473,6 +475,27 @@ fun CloudSyncProfileScreen(
                 icon = Icons.Outlined.Settings,
                 title = "Teleprompter Settings",
                 onClick = onNavigateToAdvancedSettings
+            )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+
+            // Navigation Rows: Privacy Policy
+            ProfileNavRow(
+                icon = Icons.Outlined.Security,
+                title = "Privacy Policy",
+                subtitle = "Offline-first guarantee & data rights",
+                onClick = {
+                    haptics.selection()
+                    try {
+                        val browserIntent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://gist.github.com/aadeshchauhan27/3752bc58c4e13f8475c08ea5215e98cf")
+                        )
+                        context.startActivity(browserIntent)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                    }
+                }
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))

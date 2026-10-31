@@ -255,27 +255,34 @@ fun SignInScreen(
         }
 
         // Legal Footer
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(bottom = 16.dp)
+        Row(
+            modifier = Modifier.padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val termsText = buildAnnotatedString {
-                append("By continuing you agree to our ")
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)) {
-                    append("Terms of Service")
-                }
-                append(" and ")
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)) {
-                    append("Privacy Policy")
-                }
-            }
             Text(
-                text = termsText,
+                text = "By continuing you agree to our ",
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            )
+            Text(
+                text = "Privacy Policy",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                modifier = Modifier.clickable {
+                    try {
+                        val browserIntent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("https://gist.github.com/aadeshchauhan27/3752bc58c4e13f8475c08ea5215e98cf")
+                        )
+                        context.startActivity(browserIntent)
+                    } catch (_: Exception) {}
+                }
             )
         }
     }
