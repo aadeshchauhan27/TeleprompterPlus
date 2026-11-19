@@ -232,6 +232,16 @@ class CameraRecordingViewModel(
     fun updateVerticalPosition(percent: Int) {
         viewModelScope.launch {
             settingsRepository.updateVerticalPosition(percent)
+            // Scripts with their own saved settings re-apply them on entry, so keep them in sync
+            val script = _script.value
+            if (script != null && script.hasCustomSettings) {
+                val updated = script.copy(
+                    verticalPositionPercent = percent.coerceIn(10, 80),
+                    updatedAt = System.currentTimeMillis()
+                )
+                scriptRepository.updateScript(updated)
+                _script.value = updated
+            }
         }
     }
 

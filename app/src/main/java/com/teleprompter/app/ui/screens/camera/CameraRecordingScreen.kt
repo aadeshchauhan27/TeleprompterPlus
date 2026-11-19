@@ -81,6 +81,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -358,14 +360,24 @@ fun CameraRecordingScreen(
             // Width determined by readingWidthPercent (default 85%) to avoid excessive eye movement
             val overlayWidth = totalScreenWidth * (settings.readingWidthPercent / 100f)
 
-            // Vertical positioning near camera lens (default ~25% from top)
-            val lensPositionY = totalScreenHeight * (settings.verticalPositionPercent / 100f)
+            // Overlay can be dragged with a finger via the handle; vertical position is persisted,
+            // horizontal shift is kept for this session. Clamp so the overlay stays on screen.
+            val overlayHeightFraction = 0.58f
+            val maxYPercent = (100f * (1f - overlayHeightFraction))
+            var liveYPercent by remember(settings.verticalPositionPercent) {
+                mutableFloatStateOf(settings.verticalPositionPercent.toFloat().coerceIn(10f, maxYPercent))
+            }
+            var offsetXPx by remember { mutableFloatStateOf(0f) }
+            val screenHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { totalScreenHeight.toPx() }
+            val maxShiftXPx = with(androidx.compose.ui.platform.LocalDensity.current) {
+                ((totalScreenWidth - overlayWidth) / 2f).toPx()
+            }
 
             Box(
                 modifier = Modifier
                     .width(overlayWidth)
-                    .height(totalScreenHeight * 0.58f)
-                    .offset(y = lensPositionY)
+                    .height(totalScreenHeight * overlayHeightFraction)
+                    .offset { IntOffset(offsetXPx.roundToInt(), (screenHeightPx * liveYPercent / 100f).roundToInt()) }
                     .align(Alignment.TopCenter)
             ) {
                 // Active Reading Guide Highlight Box (Screen 8 in mockup)
@@ -435,6 +447,34 @@ fun CameraRecordingScreen(
                                 scaleX = if (settings.mirrorText) -1f else 1f,
                                 scaleY = 1f
                             )
+                    )
+                }
+
+                // Drag handle: move the overlay anywhere with a finger (no need to open settings)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .width(160.dp)
+                        .height(40.dp)
+                        .pointerInput(screenHeightPx, maxShiftXPx) {
+                            detectDragGestures(
+                                onDragEnd = { viewModel.updateVerticalPosition(liveYPercent.roundToInt()) },
+                                onDragCancel = { viewModel.updateVerticalPosition(liveYPercent.roundToInt()) }
+                            ) { change, dragAmount ->
+                                change.consume()
+                                liveYPercent = (liveYPercent + dragAmount.y / screenHeightPx * 100f)
+                                    .coerceIn(10f, maxYPercent)
+                                offsetXPx = (offsetXPx + dragAmount.x).coerceIn(-maxShiftXPx, maxShiftXPx)
+                            }
+                        }
+                        .semantics { contentDescription = "Drag to move the script overlay" },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(44.dp)
+                            .height(5.dp)
+                            .background(Color.White.copy(alpha = 0.75f), RoundedCornerShape(3.dp))
                     )
                 }
             }

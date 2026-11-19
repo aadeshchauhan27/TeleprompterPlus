@@ -10,8 +10,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -181,7 +183,9 @@ fun TeleprompterPromptScreen(
                 d
             }
             val pixels = currentSpeed * DP_PER_SECOND_PER_SPEED_STEP * density.density * deltaSeconds
-            if (pixels > 0f) listState.scrollBy(pixels)
+            // Raw delta: not cancelled/mutexed by finger touches (unlike scrollBy), so taps and drags can
+            // interleave with auto-scroll without breaking the loop.
+            if (pixels > 0f) listState.dispatchRawDelta(pixels)
             if (!listState.canScrollForward) {
                 // Reached the end of the script
                 isPlaying = false
@@ -275,13 +279,6 @@ fun TeleprompterPromptScreen(
                     else -> false
                 }
             }
-            // Tap anywhere on the text to play / pause
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    haptics.click()
-                    togglePlay()
-                })
-            }
     ) {
         val totalHeight = maxHeight
         val guideTop = (totalHeight * (settings.verticalPositionPercent.coerceIn(5, 80) / 100f))
@@ -322,6 +319,21 @@ fun TeleprompterPromptScreen(
             ),
             modifier = Modifier
                 .fillMaxSize()
+                // Tap the text area to play / pause. Detected in the Initial pass without consuming, so it
+                // works while the list auto-scrolls and never blocks drags. Scoped here so buttons don't toggle.
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                        if (up != null &&
+                            (up.position - down.position).getDistance() < viewConfiguration.touchSlop &&
+                            up.uptimeMillis - down.uptimeMillis < 400L
+                        ) {
+                            haptics.click()
+                            togglePlay()
+                        }
+                    }
+                }
                 .graphicsLayer {
                     if (settings.mirrorText) scaleX = -1f
                     compositingStrategy = CompositingStrategy.Offscreen
