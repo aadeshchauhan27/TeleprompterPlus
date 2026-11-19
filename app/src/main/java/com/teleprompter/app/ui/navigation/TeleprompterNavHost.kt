@@ -36,7 +36,10 @@ import com.teleprompter.app.ui.screens.search.SearchViewModel
 import com.teleprompter.app.ui.screens.settings.AdvancedSettingsScreen
 import com.teleprompter.app.ui.screens.settings.ScriptSettingsScreen
 import com.teleprompter.app.ui.screens.settings.ScriptSettingsViewModel
+import com.teleprompter.app.data.repository.OnboardingPrefs
+import com.teleprompter.app.ui.screens.onboarding.OnboardingScreen
 import com.teleprompter.app.ui.screens.splash.SplashScreen
+import kotlinx.coroutines.launch
 import com.teleprompter.app.ui.screens.teleprompter.TeleprompterPromptScreen
 import com.teleprompter.app.ui.screens.themes.ThemesScreen
 import com.teleprompter.app.ui.screens.trash.TrashScreen
@@ -47,6 +50,9 @@ fun TeleprompterNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
+    val appContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
+    val navScope = androidx.compose.runtime.rememberCoroutineScope()
+
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route,
@@ -56,8 +62,27 @@ fun TeleprompterNavHost(
         composable(Screen.Splash.route) {
             SplashScreen(
                 onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    // First launch: show the short walkthrough before Home
+                    navScope.launch {
+                        val next = if (OnboardingPrefs.isCompleted(appContext)) Screen.Home.route
+                        else Screen.Onboarding.route
+                        navController.navigate(next) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    }
+                }
+            )
+        }
+
+        // 1b. Onboarding (first launch only)
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onFinished = {
+                    navScope.launch {
+                        OnboardingPrefs.markCompleted(appContext)
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -250,7 +275,7 @@ fun TeleprompterNavHost(
                 scriptContent = script?.content ?: "",
                 viewModel = settingsViewModel,
                 initialPosition = script?.lastReadPosition ?: 0,
-                estimatedSeconds = script?.estimatedReadingTime ?: 0,
+                wordCount = script?.wordCount ?: 0,
                 onSavePosition = { settingsViewModel.saveReadPosition(it) },
                 onNavigateBack = {
                     navController.popBackStack()

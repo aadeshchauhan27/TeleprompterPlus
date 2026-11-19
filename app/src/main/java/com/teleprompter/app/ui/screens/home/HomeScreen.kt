@@ -105,6 +105,23 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val uiScope = rememberCoroutineScope()
 
+    // Soft-delete a script and offer Undo (used by both the card menu and swipe-to-delete)
+    fun deleteWithUndo(scriptId: String) {
+        haptics.warning()
+        viewModel.deleteScript(scriptId)
+        uiScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            val result = snackbarHostState.showSnackbar(
+                message = "Script deleted",
+                actionLabel = "Undo",
+                duration = androidx.compose.material3.SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.restoreScript(scriptId)
+            }
+        }
+    }
+
     // Import a plain-text script from storage (Storage Access Framework, no permission needed)
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
@@ -366,6 +383,7 @@ fun HomeScreen(
                             items = uiState.displayedScripts,
                             key = { it.id }
                         ) { script ->
+                            SwipeToDeleteBox(onDelete = { deleteWithUndo(script.id) }) {
                             ScriptCard(
                                 script = script,
                                 onClick = {
@@ -382,22 +400,9 @@ fun HomeScreen(
                                         Toast.makeText(context, "Script duplicated", Toast.LENGTH_SHORT).show()
                                     }
                                 },
-                                onDelete = {
-                                    haptics.warning()
-                                    viewModel.deleteScript(script.id)
-                                    uiScope.launch {
-                                        snackbarHostState.currentSnackbarData?.dismiss()
-                                        val result = snackbarHostState.showSnackbar(
-                                            message = "Script deleted",
-                                            actionLabel = "Undo",
-                                            duration = androidx.compose.material3.SnackbarDuration.Short
-                                        )
-                                        if (result == SnackbarResult.ActionPerformed) {
-                                            viewModel.restoreScript(script.id)
-                                        }
-                                    }
-                                }
+                                onDelete = { deleteWithUndo(script.id) }
                             )
+                            }
                         }
                     }
                 }
@@ -541,4 +546,44 @@ private fun MiniFabWithLabel(
             Icon(imageVector = icon, contentDescription = label, modifier = Modifier.size(20.dp))
         }
     }
+}
+
+/** Swipe a card to the left to delete it (with Undo handled by the caller). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteBox(
+    onDelete: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val state = androidx.compose.material3.rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == androidx.compose.material3.SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+    androidx.compose.material3.SwipeToDismissBox(
+        state = state,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+        },
+        content = { content() }
+    )
 }

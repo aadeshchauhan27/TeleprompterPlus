@@ -141,11 +141,27 @@ fun CameraRecordingScreen(
         )
     }
 
+    var permissionAsked by remember { mutableStateOf(false) }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         hasCameraPermission = permissions[Manifest.permission.CAMERA] == true
         hasAudioPermission = permissions[Manifest.permission.RECORD_AUDIO] == true
+        permissionAsked = true
+    }
+
+    // If the user denied with "don't ask again", the system dialog won't show anymore:
+    // point them to the app settings instead.
+    val cameraPermanentlyDenied = permissionAsked && !hasCameraPermission &&
+        (context as? android.app.Activity)?.let {
+            !androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
+        } == true
+
+    // Re-check when returning from system settings
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+        hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        hasAudioPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
     }
 
     LaunchedEffect(Unit) {
@@ -312,7 +328,11 @@ fun CameraRecordingScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "To read your transparent script while recording yourself, please grant camera and microphone access.",
+                        text = if (cameraPermanentlyDenied) {
+                            "Camera access is turned off for this app. Open Settings > Permissions and allow Camera (and Microphone to record your voice), then come back."
+                        } else {
+                            "To read your transparent script while recording yourself, please grant camera and microphone access. Your videos stay on your device."
+                        },
                         color = Color(0xFF94A3B8),
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp
@@ -320,14 +340,27 @@ fun CameraRecordingScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            permissionLauncher.launch(
-                                arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-                            )
+                            if (cameraPermanentlyDenied) {
+                                context.startActivity(
+                                    android.content.Intent(
+                                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                        android.net.Uri.fromParts("package", context.packageName, null)
+                                    )
+                                )
+                            } else {
+                                permissionLauncher.launch(
+                                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+                                )
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Grant Permissions", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            if (cameraPermanentlyDenied) "Open Settings" else "Grant Permissions",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }

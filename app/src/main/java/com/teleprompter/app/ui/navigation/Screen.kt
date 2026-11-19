@@ -5,6 +5,7 @@ import android.net.Uri
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object SignIn : Screen("sign_in")
+    object Onboarding : Screen("onboarding")
     object Home : Screen("home")
     object Editor : Screen("editor?scriptId={scriptId}") {
         fun createRoute(scriptId: String? = null): String {

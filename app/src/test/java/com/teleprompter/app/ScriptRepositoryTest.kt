@@ -197,4 +197,44 @@ class ScriptRepositoryTest {
         assertEquals("RIGHT", retrievedB.textAlignment)
         assertTrue(retrievedB.hasCustomSettings)
     }
+
+    @Test
+    fun deletedScripts_appearInTrashAndNotInMainList() = runBlocking {
+        val keep = repository.createScript("Keep", "stay here")
+        val gone = repository.createScript("Gone", "delete me")
+
+        repository.deleteScript(gone)
+
+        assertEquals(listOf(keep), repository.getAllScripts().first().map { it.id })
+        assertEquals(listOf(gone), repository.getDeletedScripts().first().map { it.id })
+    }
+
+    @Test
+    fun restoreScript_movesItBackFromTrash() = runBlocking {
+        val id = repository.createScript("Oops", "restore me")
+        repository.deleteScript(id)
+        assertTrue(repository.getAllScripts().first().isEmpty())
+
+        repository.restoreScript(id)
+
+        assertEquals(listOf(id), repository.getAllScripts().first().map { it.id })
+        assertTrue(repository.getDeletedScripts().first().isEmpty())
+    }
+
+    @Test
+    fun deleteScript_keepsATombstoneForSync() = runBlocking {
+        val id = repository.createScript("Synced", "content")
+        repository.deleteScript(id)
+
+        // Sync reads deleted rows too, so the deletion can propagate to the cloud
+        val forSync = fakeDao.getAllScriptsForSync().single { it.id == id }
+        assertTrue(forSync.isDeleted)
+    }
+
+    @Test
+    fun createScript_cueLinesDoNotCountAsWords() = runBlocking {
+        val id = repository.createScript("Cues", "Hello there\n[pause 3]\nbye now")
+        val script = repository.getScriptByIdDirect(id)!!
+        assertEquals(4, script.wordCount)
+    }
 }

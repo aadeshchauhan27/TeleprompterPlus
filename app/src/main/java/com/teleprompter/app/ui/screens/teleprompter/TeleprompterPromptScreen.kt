@@ -91,6 +91,7 @@ import com.teleprompter.app.core.model.TextAlignmentType
 import com.teleprompter.app.core.theme.ElectricBlue
 import com.teleprompter.app.core.theme.ReadingGuideBorder
 import com.teleprompter.app.core.theme.ReadingGuideHighlight
+import com.teleprompter.app.core.util.PrompterMath
 import com.teleprompter.app.core.util.ScriptCue
 import com.teleprompter.app.core.util.ScriptCues
 import com.teleprompter.app.core.util.rememberAppHaptics
@@ -102,8 +103,6 @@ import kotlinx.coroutines.launch
 
 private val PrompterBackground = Color(0xFF070B14)
 
-/** Scroll speed unit: one speed step equals this many dp per second (density independent). */
-private const val DP_PER_SECOND_PER_SPEED_STEP = 1.0f
 
 @Composable
 fun TeleprompterPromptScreen(
@@ -115,7 +114,7 @@ fun TeleprompterPromptScreen(
     onOpenThemes: () -> Unit,
     modifier: Modifier = Modifier,
     initialPosition: Int = 0,
-    estimatedSeconds: Int = 0,
+    wordCount: Int = 0,
     onSavePosition: (Int) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -196,7 +195,7 @@ fun TeleprompterPromptScreen(
                 lastTimeNanos = nowNanos
                 d
             }
-            val pixels = currentSpeed * speedFactor * DP_PER_SECOND_PER_SPEED_STEP * density.density * deltaSeconds
+            val pixels = PrompterMath.pixelsPerSecond(currentSpeed, density.density, speedFactor) * deltaSeconds
             // Raw delta: not cancelled/mutexed by finger touches (unlike scrollBy), so taps and drags can
             // interleave with auto-scroll without breaking the loop.
             if (pixels > 0f) listState.dispatchRawDelta(pixels)
@@ -491,7 +490,8 @@ fun TeleprompterPromptScreen(
                 ScrollProgress(
                     listState = listState,
                     paragraphCount = paragraphs.size,
-                    estimatedSeconds = estimatedSeconds,
+                    wordCount = wordCount,
+                    pauseSeconds = remember(scriptContent) { ScriptCues.totalPauseSeconds(scriptContent) },
                     speed = settings.scrollSpeed
                 )
             }
@@ -575,9 +575,11 @@ fun TeleprompterPromptScreen(
 private fun ScrollProgress(
     listState: androidx.compose.foundation.lazy.LazyListState,
     paragraphCount: Int,
-    estimatedSeconds: Int,
+    wordCount: Int,
+    pauseSeconds: Int,
     speed: Int
 ) {
+    val density = LocalDensity.current.density
     val progress by remember(paragraphCount) {
         derivedStateOf {
             if (paragraphCount <= 0) 0f else {
@@ -589,7 +591,16 @@ private fun ScrollProgress(
             }
         }
     }
-    val remaining = (estimatedSeconds * (1f - progress)).toInt()
+    // Estimate from the real scroll speed: average rendered paragraph height * paragraph count
+    // gives the total scroll distance; speed is density-independent (dp/s).
+    val avgItemPx by remember { derivedStateOf {
+        val items = listState.layoutInfo.visibleItemsInfo
+        if (items.isEmpty()) 0f else items.sumOf { it.size }.toFloat() / items.size
+    } }
+    val pxPerSecond = PrompterMath.pixelsPerSecond(speed, density)
+    val scrollSeconds = PrompterMath.scrollSeconds(avgItemPx, paragraphCount, pxPerSecond)
+    val remaining = PrompterMath.remainingSeconds(scrollSeconds, pauseSeconds, progress)
+    val wpm = PrompterMath.wpm(wordCount, scrollSeconds)
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         LinearProgressIndicator(
             progress = { progress },
@@ -608,7 +619,7 @@ private fun ScrollProgress(
         ) {
             Text("${(progress * 100).toInt()}%", color = Color(0xCCFFFFFF), fontSize = 12.sp)
             Text(
-                text = "Speed $speed" + if (estimatedSeconds > 0) "  •  %d:%02d left".format(remaining / 60, remaining % 60) else "",
+                text = "Speed $speed" + (if (wpm > 0) "  •  ~$wpm WPM" else "") + (if (scrollSeconds > 0f) "  •  ~${PrompterMath.formatClock(remaining)} left" else ""),
                 color = Color(0xCCFFFFFF),
                 fontSize = 12.sp
             )
