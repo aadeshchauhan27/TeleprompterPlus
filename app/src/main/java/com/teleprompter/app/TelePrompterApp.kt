@@ -11,5 +11,6 @@ class TelePrompterApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = DefaultAppContainer(this)
+        com.teleprompter.app.data.sync.SyncWorker.schedule(this)
     }
 }

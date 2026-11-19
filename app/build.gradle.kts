@@ -39,23 +39,21 @@ android {
         storePassword = properties.getProperty("storePassword")
         keyAlias = properties.getProperty("keyAlias")
         keyPassword = properties.getProperty("keyPassword")
-      } else {
-        val defaultDebugKeystore = file("${System.getProperty("user.home")}/.android/debug.keystore")
-        if (defaultDebugKeystore.exists()) {
-          storeFile = defaultDebugKeystore
-          storePassword = "android"
-          keyAlias = "androiddebugkey"
-          keyPassword = "android"
-        }
       }
+      // No debug-keystore fallback: a release build without keystore.properties must not be debug-signed.
     }
   }
 
   buildTypes {
     release {
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      if (rootProject.file("keystore.properties").exists()) {
+        signingConfig = signingConfigs.getByName("release")
+      } else {
+        logger.warn("keystore.properties not found: release build will be UNSIGNED")
+      }
     }
     debug {
       isDebuggable = true

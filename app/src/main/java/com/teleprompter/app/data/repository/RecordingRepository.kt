@@ -59,17 +59,17 @@ class RecordingRepositoryImpl(
         // Copy temporary recorded video into persistent storage
         var fileSize = 0L
         try {
-            val sourceFile = if (tempVideoUri.scheme == "file") {
-                File(tempVideoUri.path ?: return@withContext null)
-            } else {
-                File(tempVideoUri.path ?: return@withContext null)
-            }
+            val sourceFile = File(tempVideoUri.path ?: return@withContext null)
 
             if (sourceFile.exists()) {
-                FileInputStream(sourceFile).use { input ->
-                    FileOutputStream(targetVideoFile).use { output ->
-                        input.copyTo(output)
+                // Move (cheap rename) instead of copying; fall back to copy+delete across volumes
+                if (!sourceFile.renameTo(targetVideoFile)) {
+                    FileInputStream(sourceFile).use { input ->
+                        FileOutputStream(targetVideoFile).use { output ->
+                            input.copyTo(output)
+                        }
                     }
+                    sourceFile.delete()
                 }
                 fileSize = targetVideoFile.length()
             }

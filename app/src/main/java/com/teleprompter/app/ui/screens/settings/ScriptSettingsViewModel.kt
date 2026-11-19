@@ -114,6 +114,12 @@ class ScriptSettingsViewModel(
         }
     }
 
+    /** Persists the paragraph index the user stopped at so the prompter can resume there. */
+    fun saveReadPosition(position: Int) {
+        val id = scriptId ?: return
+        viewModelScope.launch { scriptRepository.updateLastReadPosition(id, position) }
+    }
+
     fun setScrollSpeed(speed: Int) {
         val current = uiState.value.settings.copy(
             scrollSpeed = speed.coerceIn(10, 100),

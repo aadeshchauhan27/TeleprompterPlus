@@ -18,6 +18,8 @@ import org.junit.Test
 class FakeScriptDao : ScriptDao {
     private val scripts = MutableStateFlow<Map<String, ScriptEntity>>(emptyMap())
 
+    override suspend fun getAllScriptsForSync(): List<ScriptEntity> = scripts.value.values.toList()
+
     override fun getAllScripts(): Flow<List<ScriptEntity>> =
         scripts.map { it.values.filter { s -> !s.isDeleted }.sortedByDescending { s -> s.updatedAt } }
 
@@ -79,6 +81,11 @@ class FakeScriptDao : ScriptDao {
         scripts.value = scripts.value + (id to existing.copy(isDeleted = true, updatedAt = updatedAt))
     }
 
+
+    override suspend fun restoreScript(id: String, updatedAt: Long) {
+        val existing = scripts.value[id] ?: return
+        scripts.value = scripts.value + (id to existing.copy(isDeleted = false, updatedAt = updatedAt))
+    }
     override fun getScriptCount(): Flow<Int> =
         scripts.map { it.values.count { s -> !s.isDeleted } }
 }
@@ -136,13 +143,16 @@ class ScriptRepositoryTest {
     }
 
     @Test
-    fun deleteScript_removesScriptPermanently() = runBlocking {
+    fun deleteScript_hidesScriptAndCanBeRestored() = runBlocking {
         val id = repository.createScript("To Delete", "Content")
         assertNotNull(repository.getScriptByIdDirect(id))
 
         repository.deleteScript(id)
         val all = repository.getAllScripts().first()
         assertTrue(all.isEmpty())
+
+        repository.restoreScript(id)
+        assertNotNull(repository.getScriptByIdDirect(id))
     }
 
     @Test

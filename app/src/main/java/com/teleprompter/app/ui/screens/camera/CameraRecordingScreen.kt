@@ -185,14 +185,16 @@ fun CameraRecordingScreen(
     }
 
     // Monotonic 60 FPS smooth scrolling engine
-    LaunchedEffect(isPromptPlaying, settings.scrollSpeed) {
+    val speedState = androidx.compose.runtime.rememberUpdatedState(settings.scrollSpeed)
+    val screenDensity = androidx.compose.ui.platform.LocalDensity.current.density
+    LaunchedEffect(isPromptPlaying) {
         if (!isPromptPlaying) return@LaunchedEffect
 
         var lastFrameTimeNanos = 0L
-        // Continuous speed model: 10..100 maps to 25..250 pixels per second
-        val pxPerSecond = settings.scrollSpeed * 2.5f
 
         while (isPromptPlaying) {
+            // Density-independent speed (10..100 -> ~9..90 dp/s), read live so slider changes don't restart the loop
+            val pxPerSecond = speedState.value * 0.9f * screenDensity
             withFrameNanos { frameTimeNanos ->
                 if (lastFrameTimeNanos != 0L) {
                     val deltaSeconds = (frameTimeNanos - lastFrameTimeNanos) / 1_000_000_000f

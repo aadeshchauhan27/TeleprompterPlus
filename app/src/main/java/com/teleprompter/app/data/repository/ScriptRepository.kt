@@ -17,6 +17,7 @@ interface ScriptRepository {
     suspend fun createScript(title: String, content: String, folderId: String? = null): String
     suspend fun updateScript(script: ScriptEntity)
     suspend fun deleteScript(id: String)
+    suspend fun restoreScript(id: String)
     suspend fun duplicateScript(id: String): String?
     suspend fun toggleFavorite(id: String, currentStatus: Boolean)
     suspend fun moveToFolder(id: String, folderId: String?)
@@ -77,7 +78,12 @@ class ScriptRepositoryImpl(
     }
 
     override suspend fun deleteScript(id: String) {
-        scriptDao.deleteScript(id)
+        // Soft delete: keeps a tombstone so the deletion syncs to other devices and can be undone
+        scriptDao.softDeleteScript(id)
+    }
+
+    override suspend fun restoreScript(id: String) {
+        scriptDao.restoreScript(id)
     }
 
     override suspend fun duplicateScript(id: String): String? {

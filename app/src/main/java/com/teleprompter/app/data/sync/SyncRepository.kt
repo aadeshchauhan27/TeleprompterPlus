@@ -52,6 +52,10 @@ class SyncRepositoryImpl(
 
         // Legacy collection for backwards-compatible migration
         private const val LEGACY_COLLECTION = "users"
+
+        // Firestore batches are limited to 500 operations
+        private const val MAX_BATCH_WRITES = 400
+        private const val CLOCK_SKEW_SLACK_MS = 10L * 60 * 1000
     }
 
     private object SyncKeys {
@@ -132,9 +136,15 @@ class SyncRepositoryImpl(
                 android.util.Log.w("TeleprompterSync", "Profile metadata write warning: ${e.message}")
             }
 
-            // 1. Fetch remote scripts from teleprompter_users/{userKey}/scripts
+            // Incremental sync: only look at documents changed since the last successful sync,
+            // with a slack window to tolerate clock skew between devices.
+            val lastSync = context.dataStore.data.first()[SyncKeys.LAST_SYNC_TIME] ?: 0L
+            val since = if (lastSync == 0L) 0L else (lastSync - CLOCK_SKEW_SLACK_MS).coerceAtLeast(0L)
+
+            // 1. Fetch changed remote scripts from teleprompter_users/{userKey}/scripts
             var remoteSnapshot = try {
-                userScriptsCollection.get().await()
+                if (since == 0L) userScriptsCollection.get().await()
+                else userScriptsCollection.whereGreaterThan("updatedAt", since).get().await()
             } catch (e: Exception) {
                 android.util.Log.e("TeleprompterSync", "Failed to fetch from $TELEPROMPTER_COLLECTION: ${e.message}")
                 _syncStatus.value = SyncStatus.OFFLINE
@@ -142,7 +152,7 @@ class SyncRepositoryImpl(
             }
 
             // Seamless migration: If teleprompter_users collection is empty, check legacy "users" collection
-            if (remoteSnapshot.isEmpty) {
+            if (since == 0L && remoteSnapshot.isEmpty) {
                 try {
                     var legacySnapshot = firestore.collection(LEGACY_COLLECTION)
                         .document(userKey)
@@ -171,16 +181,21 @@ class SyncRepositoryImpl(
             }
 
             // 2. Fetch all local scripts (including soft-deleted)
-            val localScripts = scriptDao.getAllScripts().first()
+            val localScripts = scriptDao.getAllScriptsForSync()
             val localScriptsMap = localScripts.associateBy { it.id }
 
-            // 3. Process Local -> Remote Sync (Saving strictly to teleprompter_users collection)
+            // 3. Process Local -> Remote Sync (batched; only changed scripts)
+            var batch = firestore.batch()
+            var batchCount = 0
             for (local in localScripts) {
                 val remoteData = remoteScriptsMap[local.id]
                 val remoteUpdatedAt = (remoteData?.get("updatedAt") as? Number)?.toLong() ?: 0L
 
-                if (remoteData == null || local.updatedAt >= remoteUpdatedAt) {
-                    // Local is newer or doesn't exist remotely -> push to teleprompter_users collection
+                // Push when the remote copy is unknown to this sync window, or strictly older.
+                // Ties are not pushed (nothing changed), so equal timestamps never ping-pong.
+                val changedSinceLastSync = since == 0L || local.updatedAt > since
+                val shouldPush = if (remoteData == null) changedSinceLastSync else local.updatedAt > remoteUpdatedAt
+                if (shouldPush) {
                     val scriptMap = mapOf(
                         "id" to local.id,
                         "title" to local.title,
@@ -208,9 +223,16 @@ class SyncRepositoryImpl(
                         "updatedAt" to local.updatedAt,
                         "createdAt" to local.createdAt
                     )
-                    userScriptsCollection.document(local.id).set(scriptMap, SetOptions.merge()).await()
+                    batch.set(userScriptsCollection.document(local.id), scriptMap, SetOptions.merge())
+                    batchCount++
+                    if (batchCount >= MAX_BATCH_WRITES) {
+                        batch.commit().await()
+                        batch = firestore.batch()
+                        batchCount = 0
+                    }
                 }
             }
+            if (batchCount > 0) batch.commit().await()
 
             // 4. Process Remote -> Local Sync (Deterministic conflict strategy)
             for ((scriptId, remote) in remoteScriptsMap) {

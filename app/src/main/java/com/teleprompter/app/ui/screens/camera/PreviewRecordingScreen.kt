@@ -429,6 +429,11 @@ fun PreviewRecordingScreen(
                                 val durationSec = (totalDurationMs / 1000).coerceAtLeast(1L)
                                 val title = scriptTitle?.ifBlank { "Recorded Video" } ?: "Recorded Video"
 
+                                // Export to gallery first (off main thread); the repository then moves the temp file
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    cameraEngine.saveVideoToGallery(videoUri)
+                                }
+
                                 // Save to persistent DB + local recordings directory with thumbnail
                                 val savedEntity = recordingRepository.saveRecording(
                                     scriptId = scriptId,
@@ -436,9 +441,6 @@ fun PreviewRecordingScreen(
                                     tempVideoUri = videoUri,
                                     durationSeconds = durationSec
                                 )
-
-                                // Also export to device gallery
-                                cameraEngine.saveVideoToGallery(videoUri)
 
                                 isSaving = false
                                 if (savedEntity != null) {

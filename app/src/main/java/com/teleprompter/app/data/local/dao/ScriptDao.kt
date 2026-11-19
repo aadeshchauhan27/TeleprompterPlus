@@ -14,6 +14,10 @@ interface ScriptDao {
     @Query("SELECT * FROM scripts WHERE isDeleted = 0 ORDER BY updatedAt DESC")
     fun getAllScripts(): Flow<List<ScriptEntity>>
 
+    /** Includes soft-deleted rows so deletions (tombstones) can be synced to the cloud. */
+    @Query("SELECT * FROM scripts")
+    suspend fun getAllScriptsForSync(): List<ScriptEntity>
+
     @Query("SELECT * FROM scripts WHERE isDeleted = 0 ORDER BY updatedAt DESC LIMIT :limit")
     fun getRecentScripts(limit: Int = 10): Flow<List<ScriptEntity>>
 
@@ -55,6 +59,9 @@ interface ScriptDao {
 
     @Query("UPDATE scripts SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDeleteScript(id: String, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE scripts SET isDeleted = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun restoreScript(id: String, updatedAt: Long = System.currentTimeMillis())
 
     @Query("SELECT COUNT(*) FROM scripts WHERE isDeleted = 0")
     fun getScriptCount(): Flow<Int>

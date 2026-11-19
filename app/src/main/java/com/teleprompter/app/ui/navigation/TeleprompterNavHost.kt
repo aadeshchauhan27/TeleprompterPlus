@@ -236,6 +236,9 @@ fun TeleprompterNavHost(
                 scriptTitle = script?.title ?: "TelePrompter",
                 scriptContent = script?.content ?: "",
                 viewModel = settingsViewModel,
+                initialPosition = script?.lastReadPosition ?: 0,
+                estimatedSeconds = script?.estimatedReadingTime ?: 0,
+                onSavePosition = { settingsViewModel.saveReadPosition(it) },
                 onNavigateBack = {
                     navController.popBackStack()
                 },

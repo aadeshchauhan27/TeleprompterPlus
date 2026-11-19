@@ -38,6 +38,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material3.Surface
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Description
@@ -91,6 +100,22 @@ fun HomeScreen(
     val context = LocalContext.current
     val haptics = rememberAppHaptics()
     val tabs = listOf("All", "Recent", "Favorites")
+    val snackbarHostState = remember { SnackbarHostState() }
+    val uiScope = rememberCoroutineScope()
+
+    // Import a plain-text script from storage (Storage Access Framework, no permission needed)
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            viewModel.importTextFile(context, uri) { newId ->
+                if (newId != null) {
+                    Toast.makeText(context, "Script imported", Toast.LENGTH_SHORT).show()
+                    onNavigateToScriptDetail(newId)
+                } else {
+                    Toast.makeText(context, "Couldn't read that file", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     var isFabExpanded by remember { mutableStateOf(false) }
     val fabRotation by animateFloatAsState(
@@ -104,6 +129,7 @@ fun HomeScreen(
             .fillMaxSize()
             .statusBarsPadding(),
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             Column(
                 horizontalAlignment = Alignment.End,
@@ -120,63 +146,48 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Choice 1: Paste from Clipboard (Icon only)
-                        SmallFloatingActionButton(
+                        // Choice 1: Import a text file
+                        MiniFabWithLabel(
+                            label = "Import .txt file",
+                            icon = Icons.Default.FileOpen,
+                            onClick = {
+                                haptics.click()
+                                isFabExpanded = false
+                                importLauncher.launch(arrayOf("text/plain", "text/markdown", "text/*"))
+                            }
+                        )
+
+                        // Choice 2: Paste from Clipboard
+                        MiniFabWithLabel(
+                            label = "Paste from clipboard",
+                            icon = Icons.Default.ContentPaste,
                             onClick = {
                                 haptics.confirm()
                                 isFabExpanded = false
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-                                val clip = clipboard?.primaryClip
-                                if (clip != null && clip.itemCount > 0) {
-                                    val pastedText = clip.getItemAt(0).text?.toString() ?: ""
-                                    if (pastedText.isNotBlank()) {
-                                        viewModel.pasteFromClipboard(pastedText) { newId ->
-                                            Toast.makeText(context, "Script created from clipboard", Toast.LENGTH_SHORT).show()
-                                            onNavigateToScriptDetail(newId)
-                                        }
-                                    } else {
-                                        Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
+                                val pastedText = clipboard?.primaryClip
+                                    ?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.text?.toString().orEmpty()
+                                if (pastedText.isNotBlank()) {
+                                    viewModel.pasteFromClipboard(pastedText) { newId ->
+                                        Toast.makeText(context, "Script created from clipboard", Toast.LENGTH_SHORT).show()
+                                        onNavigateToScriptDetail(newId)
                                     }
                                 } else {
                                     Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
                                 }
-                            },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            shape = CircleShape,
-                            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
-                            modifier = Modifier
-                                .size(48.dp)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ContentPaste,
-                                contentDescription = "Paste from Clipboard",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                            }
+                        )
 
-                        // Choice 2: Create Blank Script (Icon only)
-                        SmallFloatingActionButton(
+                        // Choice 3: Create Blank Script
+                        MiniFabWithLabel(
+                            label = "New blank script",
+                            icon = Icons.Default.Edit,
                             onClick = {
                                 haptics.click()
                                 isFabExpanded = false
                                 onNavigateToCreateScript()
-                            },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            shape = CircleShape,
-                            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
-                            modifier = Modifier
-                                .size(48.dp)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Create Blank Script",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                            }
+                        )
                     }
                 }
 
@@ -352,7 +363,17 @@ fun HomeScreen(
                                 onDelete = {
                                     haptics.warning()
                                     viewModel.deleteScript(script.id)
-                                    Toast.makeText(context, "Script deleted", Toast.LENGTH_SHORT).show()
+                                    uiScope.launch {
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "Script deleted",
+                                            actionLabel = "Undo",
+                                            duration = androidx.compose.material3.SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            viewModel.restoreScript(script.id)
+                                        }
+                                    }
                                 }
                             )
                         }
@@ -458,5 +479,44 @@ private fun BottomNavItem(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = color
         )
+    }
+}
+
+@Composable
+private fun MiniFabWithLabel(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 2.dp,
+            shadowElevation = 2.dp
+        ) {
+            Text(
+                text = label,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            )
+        }
+        SmallFloatingActionButton(
+            onClick = onClick,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            shape = CircleShape,
+            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
+            modifier = Modifier
+                .size(48.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+        ) {
+            Icon(imageVector = icon, contentDescription = label, modifier = Modifier.size(20.dp))
+        }
     }
 }

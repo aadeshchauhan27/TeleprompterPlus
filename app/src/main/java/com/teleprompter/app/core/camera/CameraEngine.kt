@@ -66,6 +66,16 @@ class CameraEngine(
     val status: StateFlow<CameraRecordingStatus> = _status.asStateFlow()
 
     private var currentTempFile: File? = null
+    private var lastVideoQuality = com.teleprompter.app.core.model.VideoQualityPreference.HIGH
+    private var lastFlashOn = false
+
+    /** Removes leftover recordings in the cache older than one day (e.g. discarded takes). */
+    private fun cleanupStaleTempFiles() {
+        val cutoff = System.currentTimeMillis() - 24L * 60 * 60 * 1000
+        context.cacheDir.listFiles { f -> f.name.startsWith("TelePrompter_") && f.name.endsWith(".mp4") }
+            ?.filter { it.lastModified() < cutoff && it != currentTempFile }
+            ?.forEach { it.delete() }
+    }
 
     fun clearErrorMessage() {
         _status.value = _status.value.copy(errorMessage = null)
@@ -79,6 +89,8 @@ class CameraEngine(
         defaultFlashOn: Boolean = false,
         onCameraReady: () -> Unit = {}
     ) {
+        lastVideoQuality = videoQuality
+        lastFlashOn = defaultFlashOn
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
             try {
@@ -158,7 +170,7 @@ class CameraEngine(
         } else {
             CameraLens.FRONT
         }
-        bindCamera(lifecycleOwner, previewView, nextLens)
+        bindCamera(lifecycleOwner, previewView, nextLens, lastVideoQuality, lastFlashOn)
     }
 
     fun toggleTorch() {
@@ -187,6 +199,7 @@ class CameraEngine(
             return
         }
 
+        cleanupStaleTempFiles()
         val fileName = "TelePrompter_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.mp4"
         val outputFile = File(context.cacheDir, fileName)
         currentTempFile = outputFile
@@ -220,6 +233,8 @@ class CameraEngine(
                 is VideoRecordEvent.Status -> {
                     val durationNanos = event.recordingStats.recordedDurationNanos
                     val seconds = durationNanos / 1_000_000_000L
+                    // Status fires ~10x/s; only publish when the displayed second changes
+                    if (seconds == _status.value.durationSeconds) return@start
                     val mins = seconds / 60
                     val secs = seconds % 60
                     val formatted = String.format(Locale.US, "%02d:%02d", mins, secs)
@@ -238,17 +253,24 @@ class CameraEngine(
                 }
 
                 is VideoRecordEvent.Finalize -> {
-                    val fileUri = Uri.fromFile(outputFile)
-                    _status.value = _status.value.copy(
-                        state = RecordingState.STOPPED,
-                        outputUri = fileUri
-                    )
                     activeRecording = null
                     if (!event.hasError()) {
+                        val fileUri = Uri.fromFile(outputFile)
+                        _status.value = _status.value.copy(
+                            state = RecordingState.STOPPED,
+                            outputUri = fileUri
+                        )
                         onFinalized(fileUri)
                     } else {
+                        // Discard the partial file and return to idle so the user can retry
+                        outputFile.delete()
+                        currentTempFile = null
                         _status.value = _status.value.copy(
-                            errorMessage = "Recording error: ${event.cause?.message}"
+                            state = RecordingState.IDLE,
+                            outputUri = null,
+                            durationSeconds = 0,
+                            formattedDuration = "00:00",
+                            errorMessage = "Recording error: ${event.cause?.message ?: "unknown"}"
                         )
                     }
                 }

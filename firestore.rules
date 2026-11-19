@@ -10,7 +10,9 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && (
         request.auth.uid == userId ||
-        (request.auth.token.email != null && request.auth.token.email.lower() == userId.lower())
+        (request.auth.token.email != null &&
+         request.auth.token.email_verified == true &&
+         request.auth.token.email.lower() == userId.lower())
       );
     }
 

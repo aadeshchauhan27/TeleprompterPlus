@@ -60,7 +60,7 @@ class CameraRecordingViewModel(
         _isCameraBound
     ) { script, settings, cameraStatus, isSheetOpen, isBound ->
         val totalSec = if (script != null && script.estimatedReadingTime > 0) {
-            script.estimatedReadingTime * 60
+            script.estimatedReadingTime // already stored in seconds
         } else {
             300
         }

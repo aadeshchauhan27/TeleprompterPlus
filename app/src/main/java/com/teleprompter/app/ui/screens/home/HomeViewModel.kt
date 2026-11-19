@@ -81,6 +81,10 @@ class HomeViewModel(
         }
     }
 
+    fun restoreScript(scriptId: String) {
+        viewModelScope.launch { scriptRepository.restoreScript(scriptId) }
+    }
+
     fun duplicateScript(scriptId: String, onDuplicated: (String) -> Unit = {}) {
         viewModelScope.launch {
             val newId = scriptRepository.duplicateScript(scriptId)
@@ -101,6 +105,26 @@ class HomeViewModel(
                 content = content
             )
             onCreated(newId)
+        }
+    }
+
+    /** Imports a text file as a new script; the file name becomes the title. Reads on the IO dispatcher. */
+    fun importTextFile(context: android.content.Context, uri: android.net.Uri, onResult: (String?) -> Unit) {
+        viewModelScope.launch {
+            val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    val resolver = context.contentResolver
+                    val name = resolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)
+                        ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+                    val text = resolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                    if (text.isNullOrBlank()) null
+                    else (name?.substringBeforeLast('.')?.ifBlank { null } ?: "Imported Script") to text.trim()
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            val id = result?.let { (title, content) -> scriptRepository.createScript(title = title.take(60), content = content) }
+            onResult(id)
         }
     }
 }
