@@ -361,14 +361,14 @@ fun HomeScreen(
                 }
                 uiState.displayedScripts.isEmpty() -> {
                     val emptyMessage = when (uiState.selectedTab) {
-                        1 -> Pair("No Recent Scripts", "Scripts you view or edit recently will appear here.")
-                        2 -> Pair("No Favorites Yet", "Tap the star icon on any script to quickly access it from favorites.")
-                        else -> Pair("No Scripts Created", "Tap the + button below to create your first script or paste from clipboard.")
+                        1 -> Pair("Nothing recent", "Scripts you open or edit will show up here.")
+                        2 -> Pair("No favourites yet", "Star a script and it will wait for you here.")
+                        else -> Pair("No scripts yet", "Tap + to write one, paste from your clipboard, or import a text file.")
                     }
                     EmptyState(
                         title = emptyMessage.first,
                         subtitle = emptyMessage.second,
-                        actionLabel = if (uiState.selectedTab == 0) "+ Create Script" else null,
+                        actionLabel = if (uiState.selectedTab == 0) "Write a script" else null,
                         onActionClick = if (uiState.selectedTab == 0) onNavigateToCreateScript else null
                     )
                 }

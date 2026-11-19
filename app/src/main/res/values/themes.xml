@@ -1,7 +1,9 @@
 <resources>
-    <style name="Theme.TelePrompter" parent="android:Theme.Material.NoActionBar">
+    <!-- Light by default so a light-mode app never flashes a dark window before Compose draws -->
+    <style name="Theme.TelePrompter" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

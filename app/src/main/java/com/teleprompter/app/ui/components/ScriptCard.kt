@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,22 +66,32 @@ fun ScriptCard(
                 ambientColor = Color(0x0A000000)
             )
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(
+                if (script.isFavorite) {
+                    // Very light amber wash so a favourite reads as "marked" without hurting contrast
+                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.08f)
+                        .compositeOver(MaterialTheme.colorScheme.surface)
+                } else {
+                    MaterialTheme.colorScheme.surface
+                }
+            )
             .border(
                 width = 1.dp,
-                color = if (script.isFavorite) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline,
+                color = if (script.isFavorite) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f) else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick)
     ) {
-        // Left accent stripe for favorite script
+        // Slim amber bar on the left edge for a favourite script (inset so it doesn't touch the corners)
         if (script.isFavorite) {
             Box(
                 modifier = Modifier
-                    .matchParentSize()
+                    .align(Alignment.CenterStart)
+                    .padding(start = 6.dp)
+                    .height(36.dp)
                     .width(4.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.tertiary)
             )
         }
 
@@ -119,7 +130,7 @@ fun ScriptCard(
                         Icon(
                             imageVector = if (script.isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
                             contentDescription = if (script.isFavorite) "Remove from favorites" else "Add to favorites",
-                            tint = if (script.isFavorite) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            tint = if (script.isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier.size(20.dp)
                         )
                     }

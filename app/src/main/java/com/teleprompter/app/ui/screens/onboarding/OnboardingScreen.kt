@@ -55,23 +55,23 @@ data class OnboardingPage(
 val onboardingPages = listOf(
     OnboardingPage(
         art = OnboardingArt.PROMPTER,
-        title = "Read from the screen, look at the lens",
-        body = "The text scrolls at the speed you set, so your eyes stay close to the camera."
+        title = "Read it off the screen, talk to the lens",
+        body = "The words scroll at your pace, so you keep eye contact without memorising a thing."
     ),
     OnboardingPage(
         art = OnboardingArt.CONTROLS,
         title = "Tap to play, drag to jump",
-        body = "Change speed and size while it runs. Put [pause 3] or [slow] on a line of its own to control the pacing."
+        body = "Change the speed and size on the fly. Drop [pause 3] or [slow] on its own line when you need a breather."
     ),
     OnboardingPage(
         art = OnboardingArt.CAMERA,
         title = "Record with the script on top",
-        body = "The script floats over the camera preview but is not part of the video. Drag it to just under the lens."
+        body = "It floats over the camera preview but never shows up in your video. Drag it right under the lens."
     )
 )
 
 /** Label of the final button; it leads to the sample script on the home screen. */
-const val ONBOARDING_LAST_BUTTON = "Open the sample script"
+const val ONBOARDING_LAST_BUTTON = "Try the sample script"
 
 object OnboardingTags {
     const val NEXT = "onboarding_next"

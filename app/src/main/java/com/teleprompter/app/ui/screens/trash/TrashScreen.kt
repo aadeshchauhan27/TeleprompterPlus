@@ -65,7 +65,7 @@ fun TrashScreen(
         if (deleted.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "Trash is empty.\nDeleted scripts appear here so you can restore them.",
+                    text = "Nothing in the trash.\nDeleted scripts hang out here until you bring them back.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(32.dp)
                 )

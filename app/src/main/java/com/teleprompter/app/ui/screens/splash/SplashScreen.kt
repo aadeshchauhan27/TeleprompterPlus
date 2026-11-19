@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -51,7 +53,7 @@ fun SplashScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DeepNavyDark)
+            .background(MaterialTheme.colorScheme.background)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -72,13 +74,16 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            TeleprompterBrandTitle(fontSize = 32.sp, isDarkBackground = true)
+            TeleprompterBrandTitle(
+                fontSize = 32.sp,
+                isDarkBackground = MaterialTheme.colorScheme.background.luminance() < 0.5f
+            )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "A teleprompter for your phone camera",
-                color = Color(0xFF8EA3BF),
+                text = "A teleprompter for your phone",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal
             )

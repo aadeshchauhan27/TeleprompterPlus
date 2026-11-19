@@ -3,4 +3,5 @@
     <color name="dark_navy_bg">#070B14</color>
     <color name="dark_surface">#0F172A</color>
     <color name="white">#FFFFFF</color>
+    <color name="window_background">#F5EFE4</color>
 </resources>

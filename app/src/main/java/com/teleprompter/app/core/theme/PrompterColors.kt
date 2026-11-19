@@ -5,10 +5,10 @@ import androidx.compose.ui.graphics.luminance
 import com.teleprompter.app.core.model.PresetThemes
 
 /** Default dark prompter background, used when the selected theme can't be resolved. */
-val PrompterDefaultBackground = Color(0xFF070B14)
+val PrompterDefaultBackground = Color(0xFF0B1220)
 
 /** Default light prompter background, used when the text is dark and the theme background clashes. */
-val PrompterDefaultLightBackground = Color(0xFFF8FAFC)
+val PrompterDefaultLightBackground = Color(0xFFF5EFE4)
 
 /** WCAG-style contrast ratio between two colours (1 = identical, 21 = black on white). */
 fun contrastRatio(a: Color, b: Color): Float {
