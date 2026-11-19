@@ -16,6 +16,7 @@ import com.teleprompter.app.ui.screens.profile.ProfileViewModel
 import com.teleprompter.app.ui.screens.recordings.RecordingsViewModel
 import com.teleprompter.app.ui.screens.search.SearchViewModel
 import com.teleprompter.app.ui.screens.settings.ScriptSettingsViewModel
+import com.teleprompter.app.ui.screens.trash.TrashViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -41,6 +42,11 @@ object AppViewModelProvider {
             FolderViewModel(
                 savedStateHandle = createSavedStateHandle(),
                 folderRepository = telePrompterApp().container.folderRepository,
+                scriptRepository = telePrompterApp().container.scriptRepository
+            )
+        }
+        initializer {
+            TrashViewModel(
                 scriptRepository = telePrompterApp().container.scriptRepository
             )
         }

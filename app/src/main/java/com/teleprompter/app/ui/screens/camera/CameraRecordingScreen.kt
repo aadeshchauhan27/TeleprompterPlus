@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -266,9 +267,16 @@ fun CameraRecordingScreen(
             .fillMaxSize()
             .background(Color.Black)
             .pointerInput(Unit) {
-                detectTapGestures {
-                    // Tap anywhere to toggle controls back
+                detectTapGestures { offset ->
+                    // Tap anywhere to toggle controls back, and focus the camera at the tap point
                     areControlsVisible = !areControlsVisible
+                    previewViewRef?.let { viewModel.focusAt(it, offset.x, offset.y) }
+                }
+            }
+            .pointerInput(Unit) {
+                // Pinch to zoom the camera
+                detectTransformGestures { _, _, zoom, _ ->
+                    if (zoom != 1f) viewModel.zoomBy(zoom)
                 }
             }
     ) {

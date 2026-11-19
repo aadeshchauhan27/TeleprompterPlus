@@ -8,6 +8,7 @@ import java.util.UUID
 
 interface ScriptRepository {
     fun getAllScripts(): Flow<List<ScriptEntity>>
+    fun getDeletedScripts(): Flow<List<ScriptEntity>>
     fun getRecentScripts(limit: Int = 10): Flow<List<ScriptEntity>>
     fun getFavoriteScripts(): Flow<List<ScriptEntity>>
     fun getScriptsInFolder(folderId: String): Flow<List<ScriptEntity>>
@@ -29,6 +30,8 @@ class ScriptRepositoryImpl(
 ) : ScriptRepository {
 
     override fun getAllScripts(): Flow<List<ScriptEntity>> = scriptDao.getAllScripts()
+
+    override fun getDeletedScripts(): Flow<List<ScriptEntity>> = scriptDao.getDeletedScripts()
 
     override fun getRecentScripts(limit: Int): Flow<List<ScriptEntity>> =
         scriptDao.getRecentScripts(limit)

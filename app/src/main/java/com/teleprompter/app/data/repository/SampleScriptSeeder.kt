@@ -26,6 +26,10 @@ Tip: place your phone just below the camera lens and keep your eyes close to the
 
 Want to record yourself? Go back to the script page and tap Record. The script scrolls over the camera preview while you speak, and your video is saved to the Recordings tab.
 
+Director cues: put [pause 3], [slow], [fast] or [normal] on a line of its own and the prompter will react. They are not read aloud. Here is a two second pause:
+[pause 2]
+Nice. You are back in the flow.
+
 Try changing the settings now. Make the text bigger. Slow it down. Switch the font. Turn on mirror mode if you plan to use a beam splitter glass.
 
 When you are ready, create your own script with the plus button. You can type it, paste it from the clipboard, or import a text file.

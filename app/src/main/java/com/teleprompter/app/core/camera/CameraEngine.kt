@@ -173,6 +173,28 @@ class CameraEngine(
         bindCamera(lifecycleOwner, previewView, nextLens, lastVideoQuality, lastFlashOn)
     }
 
+    /** Pinch-to-zoom: multiplies the current zoom ratio by [scale], clamped to the camera's range. */
+    fun zoomBy(scale: Float) {
+        val camera = currentCamera ?: return
+        val zoom = camera.cameraInfo.zoomState.value ?: return
+        val target = (zoom.zoomRatio * scale).coerceIn(zoom.minZoomRatio, zoom.maxZoomRatio)
+        camera.cameraControl.setZoomRatio(target)
+    }
+
+    /** Tap-to-focus (and meter exposure) at a point in [previewView] pixel coordinates. */
+    fun focusAt(previewView: PreviewView, x: Float, y: Float) {
+        val camera = currentCamera ?: return
+        try {
+            val point = previewView.meteringPointFactory.createPoint(x, y)
+            val action = androidx.camera.core.FocusMeteringAction.Builder(point)
+                .setAutoCancelDuration(3, java.util.concurrent.TimeUnit.SECONDS)
+                .build()
+            camera.cameraControl.startFocusAndMetering(action)
+        } catch (_: Exception) {
+            // Focus is best-effort (e.g. camera not metering-capable)
+        }
+    }
+
     fun toggleTorch() {
         val camera = currentCamera ?: return
         val currentTorch = _status.value.isTorchOn

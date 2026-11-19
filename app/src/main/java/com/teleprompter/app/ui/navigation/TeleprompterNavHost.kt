@@ -39,6 +39,8 @@ import com.teleprompter.app.ui.screens.settings.ScriptSettingsViewModel
 import com.teleprompter.app.ui.screens.splash.SplashScreen
 import com.teleprompter.app.ui.screens.teleprompter.TeleprompterPromptScreen
 import com.teleprompter.app.ui.screens.themes.ThemesScreen
+import com.teleprompter.app.ui.screens.trash.TrashScreen
+import com.teleprompter.app.ui.screens.trash.TrashViewModel
 
 @Composable
 fun TeleprompterNavHost(
@@ -87,6 +89,9 @@ fun TeleprompterNavHost(
                 },
                 onNavigateToScriptDetail = { scriptId ->
                     navController.navigate(Screen.Detail.createRoute(scriptId))
+                },
+                onNavigateToTrash = {
+                    navController.navigate(Screen.Trash.route)
                 },
                 onNavigateToSearch = {
                     navController.navigate(Screen.Search.route)
@@ -160,6 +165,14 @@ fun TeleprompterNavHost(
         }
 
         // 6. Search Screen
+        composable(Screen.Trash.route) {
+            val viewModel: TrashViewModel = viewModel(factory = AppViewModelProvider.Factory)
+            TrashScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
         composable(Screen.Search.route) {
             val viewModel: SearchViewModel = viewModel(factory = AppViewModelProvider.Factory)
             SearchScreen(

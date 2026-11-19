@@ -12,7 +12,8 @@ object ScriptUtils {
      */
     fun calculateWordCount(text: String): Int {
         if (text.isBlank()) return 0
-        return text.trim().split("\\s+".toRegex()).count { it.isNotBlank() }
+        // Cue lines like [pause 2] are directions, not spoken words
+        return ScriptCues.stripCues(text).trim().split("\\s+".toRegex()).count { it.isNotBlank() }
     }
 
     /**

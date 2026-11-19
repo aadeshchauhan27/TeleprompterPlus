@@ -40,6 +40,7 @@ sealed class Screen(val route: String) {
         }
     }
     object Recordings : Screen("recordings")
+    object Trash : Screen("trash")
     object AdvancedSettings : Screen("advanced_settings")
     object CloudSyncProfile : Screen("cloud_sync_profile")
     object ProFeatures : Screen("pro_features")

@@ -142,6 +142,10 @@ class CameraRecordingViewModel(
         cameraEngine.toggleCameraLens(lifecycleOwner, previewView)
     }
 
+    fun zoomBy(scale: Float) = cameraEngine.zoomBy(scale)
+
+    fun focusAt(previewView: PreviewView, x: Float, y: Float) = cameraEngine.focusAt(previewView, x, y)
+
     fun toggleTorch() {
         cameraEngine.toggleTorch()
     }

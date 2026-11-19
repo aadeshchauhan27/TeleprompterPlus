@@ -91,6 +91,8 @@ import com.teleprompter.app.core.model.TextAlignmentType
 import com.teleprompter.app.core.theme.ElectricBlue
 import com.teleprompter.app.core.theme.ReadingGuideBorder
 import com.teleprompter.app.core.theme.ReadingGuideHighlight
+import com.teleprompter.app.core.util.ScriptCue
+import com.teleprompter.app.core.util.ScriptCues
 import com.teleprompter.app.core.util.rememberAppHaptics
 import com.teleprompter.app.ui.components.OverlayCustomizationSheet
 import com.teleprompter.app.ui.screens.settings.ScriptSettingsViewModel
@@ -138,6 +140,8 @@ fun TeleprompterPromptScreen(
     val paragraphs = remember(scriptContent) {
         scriptContent.ifBlank { "No content to read." }.split("\n")
     }
+    val cues = remember(paragraphs) { paragraphs.map { ScriptCues.parse(it) } }
+    val cueIndices = remember(cues) { cues.indices.filter { cues[it] != null } }
     val listState = rememberLazyListState()
 
     var isPlaying by remember { mutableStateOf(false) }
@@ -173,19 +177,53 @@ fun TeleprompterPromptScreen(
     }
 
     // Smooth, time-based, density-independent scrolling engine. Speed changes don't restart the loop.
+    // Honors inline cues: [pause N], [slow], [fast], [normal].
     LaunchedEffect(isPlaying) {
         if (!isPlaying) return@LaunchedEffect
         var lastTimeNanos = 0L
+        val before = listState.layoutInfo.beforeContentPadding
+        val first = listState.firstVisibleItemIndex
+        val firstInfo = listState.layoutInfo.visibleItemsInfo.firstOrNull()
+        // A cue line that has already scrolled past the reading line must not fire again on resume
+        val startIdx = if (firstInfo != null && firstInfo.offset < before - 2) first + 1 else first
+        var cuePtr = cueIndices.indexOfFirst { it >= startIdx }.let { if (it < 0) cueIndices.size else it }
+        var speedFactor = (0 until first).lastOrNull { cues[it] is ScriptCue.Speed }
+            ?.let { (cues[it] as ScriptCue.Speed).factor } ?: 1f
+
         while (isPlaying) {
             val deltaSeconds = withFrameNanos { nowNanos ->
                 val d = if (lastTimeNanos == 0L) 0f else (nowNanos - lastTimeNanos) / 1_000_000_000f
                 lastTimeNanos = nowNanos
                 d
             }
-            val pixels = currentSpeed * DP_PER_SECOND_PER_SPEED_STEP * density.density * deltaSeconds
+            val pixels = currentSpeed * speedFactor * DP_PER_SECOND_PER_SPEED_STEP * density.density * deltaSeconds
             // Raw delta: not cancelled/mutexed by finger touches (unlike scrollBy), so taps and drags can
             // interleave with auto-scroll without breaking the loop.
             if (pixels > 0f) listState.dispatchRawDelta(pixels)
+
+            // Fire cues as their line reaches the reading line
+            val infos = listState.layoutInfo.visibleItemsInfo
+            while (cuePtr < cueIndices.size) {
+                val idx = cueIndices[cuePtr]
+                val cue = cues[idx]
+                val reached = if (idx < listState.firstVisibleItemIndex) {
+                    true // already scrolled past (e.g. user dragged ahead)
+                } else {
+                    val item = infos.firstOrNull { it.index == idx } ?: break
+                    item.offset <= before
+                }
+                if (!reached) break
+                cuePtr++
+                when (cue) {
+                    is ScriptCue.Pause -> {
+                        delay((cue.seconds * 1000).toLong())
+                        lastTimeNanos = 0L
+                    }
+                    is ScriptCue.Speed -> speedFactor = cue.factor
+                    null -> Unit
+                }
+            }
+
             if (!listState.canScrollForward) {
                 // Reached the end of the script
                 isPlaying = false
@@ -353,6 +391,19 @@ fun TeleprompterPromptScreen(
                 }
         ) {
             items(paragraphs.size) { index ->
+                val cue = cues[index]
+                if (cue != null) {
+                    // Director cue: shown as a small dim hint, not read aloud
+                    Text(
+                        text = cue.label,
+                        color = textColor.copy(alpha = 0.4f),
+                        fontSize = (settings.fontSize * 0.55f).sp,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    return@items
+                }
                 val line = paragraphs[index]
                 Text(
                     text = if (line.isEmpty()) " " else line,

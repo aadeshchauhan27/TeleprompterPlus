@@ -20,6 +20,9 @@ class FakeScriptDao : ScriptDao {
 
     override suspend fun getAllScriptsForSync(): List<ScriptEntity> = scripts.value.values.toList()
 
+    override fun getDeletedScripts(): Flow<List<ScriptEntity>> =
+        scripts.map { it.values.filter { s -> s.isDeleted }.sortedByDescending { s -> s.updatedAt } }
+
     override fun getAllScripts(): Flow<List<ScriptEntity>> =
         scripts.map { it.values.filter { s -> !s.isDeleted }.sortedByDescending { s -> s.updatedAt } }
 
