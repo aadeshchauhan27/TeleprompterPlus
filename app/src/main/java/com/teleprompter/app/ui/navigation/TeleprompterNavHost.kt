@@ -27,7 +27,6 @@ import com.teleprompter.app.ui.screens.folders.FolderScreen
 import com.teleprompter.app.ui.screens.folders.FolderViewModel
 import com.teleprompter.app.ui.screens.home.HomeScreen
 import com.teleprompter.app.ui.screens.home.HomeViewModel
-import com.teleprompter.app.ui.screens.pro.ProFeaturesScreen
 import com.teleprompter.app.ui.screens.profile.CloudSyncProfileScreen
 import com.teleprompter.app.ui.screens.recordings.RecordingsScreen
 import com.teleprompter.app.ui.screens.recordings.RecordingsViewModel
@@ -129,9 +128,6 @@ fun TeleprompterNavHost(
                 },
                 onNavigateToProfile = {
                     navController.navigate(Screen.CloudSyncProfile.route)
-                },
-                onNavigateToPro = {
-                    navController.navigate(Screen.ProFeatures.route)
                 }
             )
         }
@@ -384,9 +380,6 @@ fun TeleprompterNavHost(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onNavigateToPro = {
-                    navController.navigate(Screen.ProFeatures.route)
-                },
                 onNavigateToAdvancedSettings = {
                     navController.navigate(Screen.AdvancedSettings.route)
                 },
@@ -400,15 +393,6 @@ fun TeleprompterNavHost(
                 },
                 onNavigateToSignIn = {
                     navController.navigate(Screen.SignIn.route)
-                }
-            )
-        }
-
-        // 15. Pro Features Paywall Screen (Mockup Screen 15)
-        composable(Screen.ProFeatures.route) {
-            ProFeaturesScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
                 }
             )
         }

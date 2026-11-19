@@ -12,10 +12,10 @@ import androidx.compose.ui.unit.dp
 
 // Sleek Monochrome Dark Scheme (Deep Obsidian with Crisp White Primary)
 private val DarkColorScheme = darkColorScheme(
-    primary = Color.White,
-    onPrimary = Color(0xFF090A0F),
-    primaryContainer = Color(0xFF1E293B),
-    onPrimaryContainer = Color(0xFFF8FAFC),
+    primary = AccentCobaltSoft,
+    onPrimary = Color(0xFF0A1B45),
+    primaryContainer = AccentCobaltContainerDark,
+    onPrimaryContainer = AccentCobaltContainerLight,
     secondary = Color(0xFFE2E8F0),
     onSecondary = Color(0xFF090A0F),
     secondaryContainer = Color(0xFF1E202B),
@@ -30,7 +30,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = Color(0xFFF8FAFC),
     surfaceVariant = Color(0xFF181922),
     onSurfaceVariant = Color(0xFF94A3B8),
-    surfaceTint = Color.White,
+    surfaceTint = AccentCobaltSoft,
     inverseSurface = Color(0xFFE2E8F0),
     inverseOnSurface = Color(0xFF090A0F),
     outline = Color(0xFF27272A),
@@ -44,10 +44,10 @@ private val DarkColorScheme = darkColorScheme(
 
 // Minimalist Monochrome Light Scheme (Pure White with Deep Obsidian Pitch Black Primary)
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF0F172A),
+    primary = AccentCobalt,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFF1F5F9),
-    onPrimaryContainer = Color(0xFF0F172A),
+    primaryContainer = AccentCobaltContainerLight,
+    onPrimaryContainer = Color(0xFF0B2A6B),
     secondary = Color(0xFF334155),
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFF8FAFC),
@@ -62,7 +62,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF0F172A),
     surfaceVariant = Color(0xFFF1F5F9),
     onSurfaceVariant = Color(0xFF475569),
-    surfaceTint = Color(0xFF0F172A),
+    surfaceTint = AccentCobalt,
     inverseSurface = Color(0xFF1E293B),
     inverseOnSurface = Color(0xFFFFFFFF),
     outline = Color(0xFFE2E8F0),

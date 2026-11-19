@@ -47,7 +47,18 @@ class ScriptSettingsViewModel(
         _localSettings,
         _script
     ) { globalSettings, local, script ->
-        val activeSettings = local ?: globalSettings
+        // Per-script settings win, except a theme picked since they were saved: the theme (and the
+        // text colour it sets) is app-wide, so a different global theme takes effect immediately.
+        val activeSettings = when {
+            local == null -> globalSettings
+            globalSettings.activeThemeId != local.activeThemeId &&
+                globalSettings.textColorHex != local.textColorHex ->
+                local.copy(
+                    activeThemeId = globalSettings.activeThemeId,
+                    textColorHex = globalSettings.textColorHex
+                )
+            else -> local
+        }
         ScriptSettingsUiState(
             scriptId = scriptId,
             script = script,

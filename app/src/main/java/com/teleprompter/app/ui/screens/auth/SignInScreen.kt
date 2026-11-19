@@ -63,8 +63,6 @@ fun SignInScreen(
     viewModel: SignInViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val context = LocalContext.current
-    var showEmailDialog by remember { mutableStateOf(false) }
-    var emailInput by remember { mutableStateOf("") }
 
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -112,7 +110,7 @@ fun SignInScreen(
 
             // Subtitle
             Text(
-                text = "Sign in to sync your scripts & settings\nsecurely to your private cloud",
+                text = "Sign in with Google to back up your scripts\nand keep them in sync across devices.",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
@@ -140,44 +138,6 @@ fun SignInScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            AuthSocialButton(
-                icon = {
-                    Text("", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
-                },
-                text = "Continue with Apple",
-                onClick = {
-                    viewModel.signInWithEmail(
-                        email = "creator@apple.com",
-                        name = "Apple Creator",
-                        onSuccess = {
-                            Toast.makeText(context, "Signed in with Apple ID", Toast.LENGTH_SHORT).show()
-                            onSignInSuccess()
-                        }
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            AuthSocialButton(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(21.dp)
-                    )
-                },
-                text = "Continue with Email",
-                onClick = {
-                    showEmailDialog = true
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
 
             // Guest Mode Option
@@ -193,65 +153,6 @@ fun SignInScreen(
                     fontWeight = FontWeight.SemiBold
                 )
             }
-        }
-
-        // Email Dialog
-        if (showEmailDialog) {
-            AlertDialog(
-                onDismissRequest = { showEmailDialog = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                title = {
-                    Text(
-                        text = "Sign in with Email",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                text = {
-                    Column {
-                        Text(
-                            text = "Enter your email to sync your scripts to the cloud:",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(
-                            value = emailInput,
-                            onValueChange = { emailInput = it },
-                            placeholder = { Text("e.g. creator@example.com") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val targetEmail = emailInput.trim().ifBlank { "creator@teleprompter.app" }
-                            showEmailDialog = false
-                            viewModel.signInWithEmail(
-                                email = targetEmail,
-                                name = targetEmail.substringBefore("@").replaceFirstChar { it.uppercase() },
-                                onSuccess = {
-                                    Toast.makeText(context, "Signed in as $targetEmail", Toast.LENGTH_SHORT).show()
-                                    onSignInSuccess()
-                                }
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        Text("Sign In")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showEmailDialog = false }) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            )
         }
 
         // Legal Footer

@@ -95,6 +95,7 @@ import com.teleprompter.app.core.model.FontStyleType
 import com.teleprompter.app.core.theme.ElectricBlue
 import com.teleprompter.app.core.theme.ReadingGuideBorder
 import com.teleprompter.app.core.theme.ReadingGuideHighlight
+import com.teleprompter.app.core.theme.prompterBackgroundFor
 import com.teleprompter.app.core.theme.RecordRed
 import com.teleprompter.app.core.util.rememberAppHaptics
 import com.teleprompter.app.ui.components.OverlayCustomizationSheet
@@ -446,7 +447,7 @@ fun CameraRecordingScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.Black.copy(alpha = settings.bgOpacity))
+                        .background(prompterBackgroundFor(settings.activeThemeId, parsedTextColor).copy(alpha = settings.bgOpacity))
                         .pointerInput(Unit) {
                             detectDragGestures { _, dragAmount ->
                                 scrollOffsetPx = (scrollOffsetPx - dragAmount.y).coerceAtLeast(0f)
@@ -925,6 +926,18 @@ fun CameraRecordingScreen(
         }
 
         // 7. Overlay Customization Sheet (Mockup Screen 7)
+        if (uiState.isCustomizationSheetOpen) {
+            // System Back minimises the sheet; tapping anywhere outside it does too
+            androidx.activity.compose.BackHandler { viewModel.closeCustomizationSheet() }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null
+                    ) { viewModel.closeCustomizationSheet() }
+            )
+        }
         AnimatedVisibility(
             visible = uiState.isCustomizationSheetOpen,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),

@@ -26,6 +26,15 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -84,14 +93,18 @@ fun OverlayCustomizationSheet(
     val tabs = listOf("Presets", "Text", "Background", "Layout")
     var showResetConfirmation by remember { mutableStateOf(false) }
 
+    // Leave the camera / script visible above the sheet; the content scrolls inside it
+    val maxSheetHeight = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp * 0.6f).dp
+
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(max = maxSheetHeight)
             .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
             .background(Color(0xF00D1527)) // Translucent dark navy matching Screen 7 in mockup
             .border(
                 width = 1.dp,
-                color = Color(0x3338BDF8),
+                color = Color(0x26FFFFFF),
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
             )
             .padding(horizontal = 24.dp, vertical = 20.dp)
@@ -522,6 +535,48 @@ fun OverlayCustomizationSheet(
                     )
                 }
             }
+        }
+
+        // Fixed close controls (they stay put while the settings content scrolls):
+        // tap or swipe down on the handle to minimise, or use the close button.
+        var dragAccum by remember { mutableFloatStateOf(0f) }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = (-20).dp)
+                .fillMaxWidth(0.6f)
+                .height(44.dp)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragStart = { dragAccum = 0f },
+                        onVerticalDrag = { change, dy ->
+                            change.consume()
+                            dragAccum += dy
+                            if (dragAccum > 48f) {
+                                dragAccum = Float.NEGATIVE_INFINITY // fire once per gesture
+                                onClose()
+                            }
+                        }
+                    )
+                }
+                .clickable(onClickLabel = "Close settings", onClick = onClose)
+                .semantics { contentDescription = "Drag down or tap to close settings" }
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = 12.dp, y = (-16).dp)
+                .size(40.dp)
+                .clip(CircleShape)
+                .clickable(role = Role.Button, onClickLabel = "Close settings", onClick = onClose),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close settings",
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 

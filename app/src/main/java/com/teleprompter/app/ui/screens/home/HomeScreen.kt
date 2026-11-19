@@ -95,7 +95,6 @@ fun HomeScreen(
     onNavigateToFolders: () -> Unit,
     onNavigateToRecordings: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
-    onNavigateToPro: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()

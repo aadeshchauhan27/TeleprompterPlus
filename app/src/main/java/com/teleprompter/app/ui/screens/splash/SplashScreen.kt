@@ -51,15 +51,7 @@ fun SplashScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        DeepNavyDark,
-                        Color(0xFF091222),
-                        Color(0xFF0D1B34)
-                    )
-                )
-            )
+            .background(DeepNavyDark)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -67,43 +59,6 @@ fun SplashScreen(
                 onNavigateToHome()
             }
     ) {
-        // Subtle decorative waves at bottom (Screen 1 in mockup)
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp)
-                .align(Alignment.BottomCenter)
-        ) {
-            val w = size.width
-            val h = size.height
-
-            // Wave 1
-            val path1 = Path().apply {
-                moveTo(0f, h * 0.45f)
-                cubicTo(w * 0.35f, h * 0.15f, w * 0.65f, h * 0.75f, w, h * 0.35f)
-                lineTo(w, h)
-                lineTo(0f, h)
-                close()
-            }
-            drawPath(
-                path = path1,
-                color = Color(0xFF10284F).copy(alpha = 0.45f)
-            )
-
-            // Wave 2
-            val path2 = Path().apply {
-                moveTo(0f, h * 0.65f)
-                cubicTo(w * 0.28f, h * 0.45f, w * 0.72f, h * 0.85f, w, h * 0.55f)
-                lineTo(w, h)
-                lineTo(0f, h)
-                close()
-            }
-            drawPath(
-                path = path2,
-                color = Color(0xFF14366A).copy(alpha = 0.5f)
-            )
-        }
-
         // Center Branding
         Column(
             modifier = Modifier
@@ -122,7 +77,7 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Your Script. Your Flow. On Camera.",
+                text = "A teleprompter for your phone camera",
                 color = Color(0xFF8EA3BF),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal

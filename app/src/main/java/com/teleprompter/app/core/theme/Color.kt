@@ -10,11 +10,20 @@ val MediumSlate = Color(0xFF475569)
 val LightSlate = Color(0xFF94A3B8)
 val HairlineBorder = Color(0xFFE2E8F0)
 
-// Backward-compatibility aliases remapped to clean monochrome
-val ElectricBlue = PureBlack
-val ElectricBlueDark = PitchBlack
-val ElectricBlueLight = MediumSlate
-val ElectricBlueLighter = LightSlate
+// Brand accent: a flat, grounded cobalt (no gradients or glow). One accent for primary actions
+// and active states; red stays reserved for recording.
+val AccentCobalt = Color(0xFF2F63D6)       // light-theme primary / prompter controls
+val AccentCobaltDark = Color(0xFF1F4BB0)   // pressed / on-light emphasis
+val AccentCobaltSoft = Color(0xFF7FA2EC)   // primary on dark surfaces (better contrast than the base)
+val AccentCobaltContainerLight = Color(0xFFDCE6FA)
+val AccentCobaltContainerDark = Color(0xFF1B3570)
+
+// Backward-compatibility aliases now map to the accent (they were black, which made the Play
+// button and progress bar invisible on the dark prompter)
+val ElectricBlue = AccentCobalt
+val ElectricBlueDark = AccentCobaltDark
+val ElectricBlueLight = AccentCobaltSoft
+val ElectricBlueLighter = AccentCobaltContainerLight
 
 // Subtle Monochrome Accents
 val CyanGradient = Color(0xFF334155)
@@ -57,8 +66,8 @@ val RecordRedPulse = Color(0xFFDC2626)
 val SuccessGreen = Color(0xFF10B981)
 val WarningOrange = Color(0xFFF59E0B)
 val InfoBlue = Color(0xFF3B82F6)
-val ReadingGuideHighlight = Color(0x260F172A)
-val ReadingGuideBorder = Color(0xFF0F172A)
+val ReadingGuideHighlight = Color(0x332F63D6)   // accent tint: visible on dark and light prompter backgrounds
+val ReadingGuideBorder = Color(0xFF2F63D6)
 
 // Gold / Accent tones
 val ProGold = Color(0xFFFBBF24)
@@ -83,12 +92,12 @@ val TextColorPink = Color(0xFFEC4899)
 val TextColorCyan = Color(0xFF06B6D4)
 
 // Folder Accent Colors
-val FolderBlue = Color(0xFF0F172A)
-val FolderPurple = Color(0xFF334155)
-val FolderPink = Color(0xFF475569)
-val FolderOrange = Color(0xFF64748B)
-val FolderTeal = Color(0xFF0F172A)
-val FolderYellow = Color(0xFF94A3B8)
+val FolderBlue = Color(0xFF2F63D6)
+val FolderPurple = Color(0xFF7E5BA6)
+val FolderPink = Color(0xFFC2476B)
+val FolderOrange = Color(0xFFD9822B)
+val FolderTeal = Color(0xFF16897F)
+val FolderYellow = Color(0xFFC9A227)
 
 // Monochrome Sets
 val GradientPrimary = listOf(

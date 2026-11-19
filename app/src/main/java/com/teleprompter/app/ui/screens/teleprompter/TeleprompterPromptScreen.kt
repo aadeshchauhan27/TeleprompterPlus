@@ -91,6 +91,7 @@ import com.teleprompter.app.core.model.TextAlignmentType
 import com.teleprompter.app.core.theme.ElectricBlue
 import com.teleprompter.app.core.theme.ReadingGuideBorder
 import com.teleprompter.app.core.theme.ReadingGuideHighlight
+import com.teleprompter.app.core.theme.prompterBackgroundFor
 import com.teleprompter.app.core.util.PrompterMath
 import com.teleprompter.app.core.util.ScriptCue
 import com.teleprompter.app.core.util.ScriptCues
@@ -101,7 +102,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private val PrompterBackground = Color(0xFF070B14)
 
 
 @Composable
@@ -297,7 +297,7 @@ fun TeleprompterPromptScreen(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
-            .background(PrompterBackground)
+            .background(prompterBackgroundFor(settings.activeThemeId, textColor))
             // Hardware keyboard / Bluetooth remote / volume keys
             .focusRequester(focusRequester)
             .focusTarget()
@@ -328,7 +328,7 @@ fun TeleprompterPromptScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp, vertical = 70.dp)
-                    .border(1.dp, Color(0x3338BDF8), RoundedCornerShape(16.dp))
+                    .border(1.dp, Color(0x26FFFFFF), RoundedCornerShape(16.dp))
             )
         }
 
@@ -535,6 +535,18 @@ fun TeleprompterPromptScreen(
         }
 
         // Overlay Customization Sheet
+        if (showCustomizationSheet) {
+            // System Back minimises the sheet; tapping outside it does too
+            androidx.activity.compose.BackHandler { showCustomizationSheet = false }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null
+                    ) { showCustomizationSheet = false }
+            )
+        }
         AnimatedVisibility(
             visible = showCustomizationSheet,
             enter = slideInVertically(initialOffsetY = { it }),

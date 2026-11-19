@@ -81,7 +81,6 @@ import java.util.Locale
 @Composable
 fun CloudSyncProfileScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToPro: () -> Unit,
     onNavigateToAdvancedSettings: () -> Unit,
     onNavigateToMyScripts: () -> Unit,
     onSignOut: () -> Unit,

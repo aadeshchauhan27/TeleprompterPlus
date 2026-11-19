@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.teleprompter.app.core.theme.TelePrompterTheme
+import com.teleprompter.app.ui.screens.onboarding.ONBOARDING_LAST_BUTTON
 import com.teleprompter.app.ui.screens.onboarding.OnboardingScreen
 import com.teleprompter.app.ui.screens.onboarding.OnboardingTags
 import com.teleprompter.app.ui.screens.onboarding.onboardingPages
@@ -51,7 +52,7 @@ class OnboardingScreenTest {
         composeRule.onNodeWithTag(OnboardingTags.NEXT).performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText(onboardingPages[2].title).assertIsDisplayed()
-        composeRule.onNodeWithText("Get started").assertIsDisplayed()
+        composeRule.onNodeWithText(ONBOARDING_LAST_BUTTON).assertIsDisplayed()
 
         assertEquals(0, finishedCount)
         composeRule.onNodeWithTag(OnboardingTags.NEXT).performClick()
