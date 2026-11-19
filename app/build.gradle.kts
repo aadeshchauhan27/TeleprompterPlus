@@ -1,5 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 import java.util.Properties
+import java.io.File
 import java.io.FileInputStream
 
 plugins {
@@ -19,8 +20,8 @@ android {
     applicationId = "com.gigabytelabs.teleprompter"
     minSdk = 26
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0.0"
+    versionCode = 2
+    versionName = "1.1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables {
@@ -35,7 +36,9 @@ android {
         val properties = Properties()
         FileInputStream(keystorePropsFile).use { properties.load(it) }
         val storeFilePath = properties.getProperty("storeFile") ?: "release.keystore"
-        storeFile = if (file(storeFilePath).isAbsolute) file(storeFilePath) else rootProject.file(storeFilePath)
+        // Gradle's file() always returns an absolute File, so test the raw string instead:
+        // relative paths in keystore.properties resolve from the project root.
+        storeFile = if (File(storeFilePath).isAbsolute) file(storeFilePath) else rootProject.file(storeFilePath)
         storePassword = properties.getProperty("storePassword")
         keyAlias = properties.getProperty("keyAlias")
         keyPassword = properties.getProperty("keyPassword")
